@@ -7,9 +7,9 @@ class Router {
     }
     navigate(path) {
         window.location.hash = path; // Change the URL hash
-        this.loadRoute(path); // Load the corresponding route
+        this.renderRoute(path); // Load the corresponding route
     }
-    loadRoute(path) {
+    renderRoute(path) {
         const route = this.routes[path];
         if (route) {
             route(); // Execute the associated action for the route
@@ -17,15 +17,15 @@ class Router {
             console.error(`Route not found: ${path}`);
         }
     };
-    loadInitialRoute(path) {
+    renderInitialRoute(path) {
         // Use window.location.hash to determine the initial path, default to '/'
         path = window.location.hash.slice(1) || '/';
         console.log(path);
 
-        this.loadRoute(path)
+        this.renderRoute(path)
         // Listen for changes in the hash (back/forward navigation)
         window.addEventListener("hashchange", () => {
-            this.loadRoute(window.location.hash.slice(1))
+            this.renderRoute(window.location.hash.slice(1))
         })
     }
 }
