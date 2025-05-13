@@ -1,28 +1,30 @@
-class Router{
-    constructor(){
+class Router {
+    constructor() {
         this.routes = {};
     }
-    addRoute(path,action){
+    addRoute(path, action) {
         this.routes[path] = action // Register the route and its handler
     }
-    navigate(path){
+    navigate(path) {
         window.location.hash = path; // Change the URL hash
         this.loadRoute(path); // Load the corresponding route
     }
-    loadRoute(path){
+    loadRoute(path) {
         const route = this.routes[path];
-        if(route){
+        if (route) {
             route(); // Execute the associated action for the route
-        }else{
+        } else {
             console.error(`Route not found: ${path}`);
         }
     };
-    loadInitialRoute(path){
+    loadInitialRoute(path) {
         // Use window.location.hash to determine the initial path, default to '/'
-        const path = window.location.hash.slice(1) || '/';
+        path = window.location.hash.slice(1) || '/';
+        console.log(path);
+
         this.loadRoute(path)
         // Listen for changes in the hash (back/forward navigation)
-        window.addEventListener("hashchange",()=>{
+        window.addEventListener("hashchange", () => {
             this.loadRoute(window.location.hash.slice(1))
         })
     }
