@@ -1,4 +1,4 @@
-import Router from "./router.js";
+import Router from "./routes.js";
 
 function main() {
     const router = new Router();
@@ -14,4 +14,5 @@ function main() {
 
     router.loadInitialRoute();
 }
+
 main();
