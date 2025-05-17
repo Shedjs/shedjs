@@ -1,36 +1,70 @@
-export function createElement(tag, props = {}, ...children) {
-    const element = document.createElement(tag);
+class Dom {
+    //Creates a new DOM element with given tag, props, and children
+    static createElement(tag, props = {}, ...children) {
+        const element = document.createElement(tag);
 
-    // Set attributes if any
-    Object.keys(props).forEach(key => {
-        element.setAttribute(key, props[key])
-    })
+        // Set attributes if any
+        Object.keys(props).forEach(key => {
+            Dom.setAttribute(key, props[key])
+        })
 
-    // Append children: Handle both string (text) and element nodes
-    children.forEach(child => {
-        if (typeof child === 'string') {
-            // Append as text node if it's a string
-            element.appendChild(document.createTextNode(child));
-        } else if (child instanceof Node) {
-            // Append as element node if it's a valid DOM node
-            element.appendChild(child)
+        // Append children: Handle both string (text) and element nodes
+        children.forEach(child => {
+            if (typeof child === 'string') {
+                // Append as text node if it's a string
+                element.appendChild(document.createTextNode(child));
+            } else if (child instanceof Node) {
+                // Append as element node if it's a valid DOM node
+                element.appendChild(child)
+            }
+        });
+
+        return element
+    }
+
+    //Sets an attribute/property on a DOM elemen
+    static setAttribute(element, key, value) {
+        if (key.startsWith('on') && typeof value === "function") {
+            const event = key.slice(2).toLowerCase();
+            element.addEventListener(event, value);
+        } else if (key === "className") {
+            element.key = value;
+        } else if (key === "style" && typeof value === "object") {
+            Object.assign(element.style, value)
+        } else if (key in element) {
+            element[key] = value
+        } else {
+            element.setAttribute(key, value)
         }
-    });
+    }
+    // Appends a child to a parent element
+    static appendChild(parent, child){
+        if (child == null || parent == null){
+            return;
+        }
 
-    return element
-}
+        if (Array.isArray(child)){
+            child.forEach(c => Dom.appendChild(parent,c))
+        }
 
-export function setAttribute(element, key, value) {
-    if (key.startsWith("on") && typeof value === "function") {
-        const event = key.slice(2).toLowerCase();
-        element.addEventListener(event, value);
-    } else if (key === "className") {
-        element.setAttribute("class", value);
-    } else if (key === "style" && typeof value === "object") {
-        Object.assign(element.style, value);
-    } else if (key in element) {
-        element[key] = value;
-    } else {
-        element.setAttribute(key, value);
+        if(typeof child == "string" || typeof child === "number"){
+            parent.appendChild(document.createTextNode(child.toString()));
+        }else if (child instanceof Node){
+            parent.appendChild(child)
+        }
+
+    }
+    // Creates a text node
+    static createTextNode(text) {
+        return document.createTextNode(text);
+    }
+    // Renders an element to a container
+     static render(element, container) {
+        if (container) {
+            container.innerHTML = '';
+            container.appendChild(element);
+        }
+        return element;
     }
 }
+
