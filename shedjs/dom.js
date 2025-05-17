@@ -1,4 +1,5 @@
 class Dom {
+
     //Creates a new DOM element with given tag, props, and children
     static createElement(tag, props = {}, ...children) {
         const element = document.createElement(tag);
@@ -24,11 +25,14 @@ class Dom {
 
     //Sets an attribute/property on a DOM elemen
     static setAttribute(element, key, value) {
+        if (!(element instanceof Node)) {
+            throw new Error('Invalid element provided');
+        }
         if (key.startsWith('on') && typeof value === "function") {
             const event = key.slice(2).toLowerCase();
             element.addEventListener(event, value);
         } else if (key === "className") {
-            element.key = value;
+            element.className = value;
         } else if (key === "style" && typeof value === "object") {
             Object.assign(element.style, value)
         } else if (key in element) {
@@ -38,18 +42,21 @@ class Dom {
         }
     }
     // Appends a child to a parent element
-    static appendChild(parent, child){
-        if (child == null || parent == null){
+    static appendChild(parent, child) {
+        if (!(parent instanceof Node)) {
+            throw new Error('Invalid parent element');
+        }
+        if (child == null || parent == null) {
             return;
         }
 
-        if (Array.isArray(child)){
-            child.forEach(c => Dom.appendChild(parent,c))
+        if (Array.isArray(child)) {
+            child.forEach(c => Dom.appendChild(parent, c))
         }
 
-        if(typeof child == "string" || typeof child === "number"){
+        if (typeof child == "string" || typeof child === "number") {
             parent.appendChild(document.createTextNode(child.toString()));
-        }else if (child instanceof Node){
+        } else if (child instanceof Node) {
             parent.appendChild(child)
         }
 
@@ -59,11 +66,16 @@ class Dom {
         return document.createTextNode(text);
     }
     // Renders an element to a container
-     static render(element, container) {
-        if (container) {
-            container.innerHTML = '';
-            container.appendChild(element);
+    static render(element, container) {
+        if (!(container instanceof Node)) {
+            throw new Error('Invalid container');
         }
+        if (!(element instanceof Node)) {
+            throw new Error('Invalid element to render');
+        }
+        container.innerHTML = '';
+        container.appendChild(element);
+
         return element;
     }
 }
