@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="logo.png" alt="Shed.js_logo" width="300"/>
+  <img src="brand.png" alt="Shed.js_logo" width="300"/>
 </p>
 
 <p align="center">
