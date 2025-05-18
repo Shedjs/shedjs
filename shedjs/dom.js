@@ -1,82 +1,197 @@
 class Dom {
-
-    //Creates a new DOM element with given tag, props, and children
+    /**
+     * Creates a DOM element with specified tag, properties, and children.
+     * 
+     * @param {string} tag - The HTML tag name (e.g., 'div', 'span')
+     * @param {Object} [props={}] - Element properties/attributes (e.g., { id: 'app', onClick: handler })
+     * @param {...(Node|string)} children - Child elements or text content
+     * @returns {HTMLElement} The created DOM element
+     * 
+     * @example
+     * const button = Dom.createElement('button', { class: 'btn' }, 'Click me');
+     */
     static createElement(tag, props = {}, ...children) {
         const element = document.createElement(tag);
 
-        // Set attributes if any
+        // Apply all properties/attributes to the element
         Object.keys(props).forEach(key => {
-            Dom.setAttribute(key, props[key])
-        })
-
-        // Append children: Handle both string (text) and element nodes
-        children.forEach(child => {
-            if (typeof child === 'string') {
-                // Append as text node if it's a string
-                element.appendChild(document.createTextNode(child));
-            } else if (child instanceof Node) {
-                // Append as element node if it's a valid DOM node
-                element.appendChild(child)
-            }
+            Dom.setAttribute(element, key, props[key]);
         });
 
-        return element
+        // Process children (supports both text nodes and DOM elements)
+        children.forEach(child => {
+            if (typeof child === 'string') {
+                // Convert strings to text nodes for safe insertion
+                element.appendChild(document.createTextNode(child));
+            } else if (child instanceof Node) {
+                // Append existing DOM nodes directly
+                element.appendChild(child)
+            }
+            // Note: Silently skips other types (boolean, number, etc.)
+        });
+
+        return element;
     }
 
-    //Sets an attribute/property on a DOM elemen
+    /**
+     * Sets an attribute, property, or event listener on a DOM element.
+     * Handles different value types including:
+     * - Event handlers (onClick, onInput)
+     * - Class names (className)
+     * - Style objects
+     * - Native element properties
+     * - Fallback to HTML attributes
+     * 
+     * @param {Node} element - The target DOM element
+     * @param {string} key - Attribute/property name (e.g., 'id', 'onClick', 'style')
+     * @param {*} value - The value to set (type depends on key)
+     * @throws {Error} If element is not a valid DOM node
+     * 
+     * @example
+     * // Set an attribute
+     * Dom.setAttribute(div, 'title', 'Tooltip');
+     * 
+     * // Add an event listener
+     * Dom.setAttribute(button, 'onClick', () => console.log('Clicked'));
+     * 
+     * // Apply styles
+     * Dom.setAttribute(div, 'style', { color: 'red', fontSize: '16px' });
+     */
     static setAttribute(element, key, value) {
         if (!(element instanceof Node)) {
             throw new Error('Invalid element provided');
         }
+
+        // Handle event listeners (e.g., onClick, onInput)
         if (key.startsWith('on') && typeof value === "function") {
-            const event = key.slice(2).toLowerCase();
+            const event = key.slice(2).toLowerCase(); // Remove 'on' prefix
             element.addEventListener(event, value);
-        } else if (key === "className") {
-            element.className = value;
-        } else if (key === "style" && typeof value === "object") {
-            Object.assign(element.style, value)
-        } else if (key in element) {
-            element[key] = value
-        } else {
-            element.setAttribute(key, value)
+            return; // Early return for clean control flow
+        }
+
+        // Special cases for className and style
+        switch (key) {
+            case 'className':
+                element.className = value; // Direct property access
+                break;
+            case 'style':
+                if (typeof value === 'object') {
+                    Object.assign(element.style, value); // Merge style objects
+                }
+                break;
+            default:
+                // Set as property if it exists on the element
+                if (key in element) {
+                    element[key] = value; // ex: id, value, hidden
+                } else {
+                    // Fallback to HTML attribute
+                    element.setAttribute(key, value);
+                }
         }
     }
-    // Appends a child to a parent element
+
+    /**
+     * Appends one or more children to a parent DOM element.
+     * Handles multiple child types:
+     * - DOM Nodes (appends directly)
+     * - Strings/Numbers (converts to text nodes)
+     * - Arrays (flattens and appends recursively)
+     * - Null/undefined values (silently skips)
+     * 
+     * @param {Node} parent - The target parent element
+     * @param {Node|string|number|Array|null} child - Child to append (or array of children)
+     * @throws {Error} If parent is not a valid DOM node
+     * 
+     * @example
+     * // Append single element
+     * Dom.appendChild(container, Dom.createElement('div'));
+     * 
+     * // Append text
+     * Dom.appendChild(container, 'Hello World');
+     * 
+     * // Append multiple items
+     * Dom.appendChild(container, [
+     *   'Text node',
+     *   Dom.createElement('span', {}, 'More text'),
+     *   01 // Number becomes text node
+     * ]);
+     */
     static appendChild(parent, child) {
         if (!(parent instanceof Node)) {
-            throw new Error('Invalid parent element');
+            throw new Error(`Invalid parent element: Expected DOM Node, got ${parent?.constructor?.name}`);
         }
-        if (child == null || parent == null) {
+
+        // Skip null/undefined without error (common in conditional rendering)
+        if (child == null) return;
+
+        // Handle arrays recursively
+        if (Array.isArray(child)) {
+            child.forEach(c => Dom.appendChild(parent, c));
             return;
         }
 
-        if (Array.isArray(child)) {
-            child.forEach(c => Dom.appendChild(parent, c))
+        // Convert primitives to text nodes
+        if (typeof child === 'string' || typeof child === 'number') {
+            child = Dom.createTextNode(child.toString());
         }
 
-        if (typeof child == "string" || typeof child === "number") {
-            parent.appendChild(document.createTextNode(child.toString()));
-        } else if (child instanceof Node) {
-            parent.appendChild(child)
-        }
+        // Only append valid DOM nodes
+        if (child instanceof Node) parent.appendChild(child);
 
+        // Note: Silently skips non-renderable types (boolean, symbol, function, etc.) 
     }
-    // Creates a text node
+
+    /**
+     * Creates a text node with proper type conversion.
+     * 
+     * @param {string|number} text - The text content
+     * @returns {Text} The created text node
+     * 
+     * @example
+     * const greeting = Dom.createTextNode('Hello'); // Text node
+     * const answer = Dom.createTextNode(01); // Converts numbers
+     */
     static createTextNode(text) {
-        return document.createTextNode(text);
+        return document.createTextNode(String(text)); // Ensure string conversion
     }
-    // Renders an element to a container
+
+    /**
+     * Clears and renders a DOM element into a container.
+     * Safely replaces all existing content in the container.
+     * 
+     * @param {Node} element - The DOM element to render (must be a valid Node)
+     * @param {Node} container - The target container (must be a valid Node)
+     * @returns {Node} The rendered element for chaining
+     * @throws {Error} If container or element is invalid
+     * 
+     * @example
+     * // Basic usage
+     * const app = document.getElementById('app');
+     * const root = Dom.createElement('div', { id: 'root' });
+     * Dom.render(root, app);
+     * 
+     * @example
+     * // Chaining
+     * Dom.render(
+     *   Dom.createElement('h1', {}, 'Hello'),
+     *   document.body
+     * ).classList.add('fade-in');
+     */
     static render(element, container) {
+        // Validate inputs with detailed errors
         if (!(container instanceof Node)) {
-            throw new Error('Invalid container');
+            throw new Error(`Invalid container: Expected DOM Node, got ${container?.constructor?.name}`);
         }
         if (!(element instanceof Node)) {
-            throw new Error('Invalid element to render');
+            throw newError(`Invalid element: Expected DOM Node, got ${element?.constructor?.name}`);
         }
-        container.innerHTML = '';
-        container.appendChild(element);
 
-        return element;
+        // Performance optimization: Skip clear if container is empty
+        if (container.hasChildNodes()) {
+            container.innerHTML = ''; // Clear existing content
+        }
+
+        container.appendChild(element);
+        return element; // Allow method chaining
     }
 }
-
