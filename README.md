@@ -16,7 +16,7 @@ This JavaScript mini-framework was developed by <a href="https://github.com/sadi
 
 2. **[Event Handling System](/shedjs/events.js)**: Event-driven architecture is at the core of the framework. It provides a flexible system for listening to and responding to DOM events such as clicks, form inputs, and custom triggers. Event listeners are automatically bound and unbound as components are mounted or unmounted, preventing memory leaks and ensuring a smooth, reactive user experience.
 
-3. **[State Management](/shedjs/states.js)**: The framework includes a built-in state management system to store and track your application’s data. Whether it's user input, dynamic content, or UI configuration, this system ensures consistent data flow throughout your app. By centralizing state, it simplifies debugging, testing, and logic sharing between components. When state changes, the framework automatically triggers re-rendering of affected views, keeping the interface in sync with the underlying data.
+3. **[State Management](/shedjs/states.js)**: The framework includes a built-in state management system to store and track your application's data. Whether it's user input, dynamic content, or UI configuration, this system ensures consistent data flow throughout your app. By centralizing state, it simplifies debugging, testing, and logic sharing between components. When state changes, the framework automatically triggers re-rendering of affected views, keeping the interface in sync with the underlying data.
 
 4. **[Routing System](/shedjs/routes.js)**: To support single-page applications (SPAs), the framework offers a lightweight routing solution. It allows you to define different URL paths and map them to corresponding views or components. The router handles browser navigation, updates the address bar, and dynamically displays the appropriate content, all without full-page reloads. It enables seamless transitions between different parts of your app, mimicking the behavior of traditional multi-page websites in a modern, SPA-friendly way.
 
@@ -36,5 +36,5 @@ For detailed usage examples and module explanations, please visit our [documenta
 
 ## License
 
-This project is open-sourced under [The MIT License](https://opensource.org/license/mit).  
+Open-sourced under [The MIT License](https://opensource.org/license/mit).  
 Copyright (c) 2025 [Shed.js](https://github.com/youssefhrouk/mini-framework/graphs/contributors).

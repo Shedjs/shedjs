@@ -194,4 +194,55 @@ class Dom {
         container.appendChild(element);
         return element; // Allow method chaining
     }
+
+    /**
+     * Chainable version of render() that returns an interface with Dom methods.
+     * Allows fluent-style operations after rendering, in a consistent behavior.
+     * 
+     * @param {Node} element - DOM element to render
+     * @param {Node} container - Target container element
+     * @returns {Object} Chainable interface with:
+     *   - .element {Node} - Reference to the rendered DOM node
+     *   - .set(key, value) - Proxy to Dom.setAttribute()
+     *   - .addChildren(children) - Proxy to Dom.appendChild()
+     *   - .on(event, handler) - Uses Dom.setAttribute()'s event handling
+     * 
+     * @example
+     * // Fluent chaining
+     * Dom.renderChainable(Dom.createElement('div'), appContainer)
+     *   .set('id', 'main-card')
+     *   .addChildren([
+     *     Dom.createElement('h3', {}, 'Title'),
+     *     'Description text'
+     *   ])
+     *   .on('click', handleInteraction);
+     * 
+     * @example
+     * // Single operation
+     * const { element } = Dom.renderChainable(modal, document.body);
+     * element.focus(); // Access raw DOM node when needed
+     */
+    static renderChainable(element, container) {
+        // Renders element and stores reference
+        const renderedElement = this.render(element, container);
+
+        // Chainable interface that proxies to core Dom methods
+        const chainable = {
+            element: renderedElement,
+            // Sets attributes/properties via Dom.setAttribute()
+            set: (k, v) => { this.setAttribute(renderedElement, k, v); return chainable; },
+            // Appends children via Dom.appendChild()
+            addChildren: (children) => {
+                this.appendChild(renderedElement, children);
+                return chainable;
+            },
+            // Handles events via Dom.setAttribute()'s on* logic
+            on: (evt, handler) => {
+                this.setAttribute(renderedElement, `on${evt}`, handler);
+                return chainable;
+            }
+        };
+
+        return chainable;
+    }
 }
