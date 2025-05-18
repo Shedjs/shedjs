@@ -65,7 +65,8 @@ class Dom {
         // Handle event listeners (e.g., onClick, onInput)
         if (key.startsWith('on') && typeof value === "function") {
             const event = key.slice(2).toLowerCase(); // Remove 'on' prefix
-            element.addEventListener(event, value);
+            // element.addEventListener(event, value);
+            element[key.toLowerCase] = value;
             return; // Early return for clean control flow
         }
 
