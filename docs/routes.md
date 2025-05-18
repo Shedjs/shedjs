@@ -11,22 +11,20 @@ class Router {
         this.routes[path] = action 
     }
     navigate(path) {
-        window.location.hash = path; // Change the URL hash
-        this.renderRoute(path); // Load the corresponding route
+        window.location.hash = path;
+        this.renderRoute(path); 
     }
     renderRoute(path) {
         const route = this.routes[path];
         if (route) {
-            route(); // Execute the associated action for the route
+            route(); 
         } else {
             console.error(`Route not found: ${path}`);
         }
     }
     renderInitialRoute() {
-        // Use window.location.hash to determine the initial path, default to '/'
         const path = window.location.hash.slice(1) || '/';
         this.renderRoute(path);
-        // Listen for changes in the hash (back/forward navigation)
         window.addEventListener("hashchange", () => {
             this.renderRoute(window.location.hash.slice(1));
         });
