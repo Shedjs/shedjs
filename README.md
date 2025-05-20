@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-This JavaScript mini-framework was developed by <a href="https://github.com/sadiqui">@S</a>adiqui, <a href="https://github.com/youssefhrouk">@H</a>rouk, <a href="https://github.com/aelidris">@E</a>lidrissi, and <a href="https://github.com/majnun917">@N</a>dieye.
+This JavaScript mini-framework was developed by <a href="https://github.com/sadiqui">@S</a>adiqui, <a href="https://github.com/youssefhrouk">@H</a>rouk, <a href="https://github.com/aelidris">@E</a>lidrissi, and <a href="https://github.com/majnun917">@D</a>ieye.
 </p>
 
 ## Features
@@ -34,6 +34,26 @@ This initialization step lays the foundation for a fully interactive, reactive, 
 
 For detailed usage examples and module explanations, please visit our [documentation folder](/docs/module.md).
 
+## TodoMVC
+
+We included a fully functional [TodoMVC](https://todomvc.com/) app built with Shed.js, demonstrating the framework's capabilities in DOM manipulation, state management, event handling, and routing.
+
+Run the app (Node.js server):
+
+```shell
+cd todomvc/
+node server.js
+```
+
+Visit http://localhost:3000
+
+**Want to contribute?**
+
+- Submit PRs to improve the [TodoMVC implementation](https://github.com/youssefhrouk/mini-framework/tree/main/todomvc)
+
+- Check the [spec compliance checklist](https://github.com/tastejs/todomvc/blob/master/app-spec.md)
+
+BTW, for this implementation, we simply used the todomvc CDN (see [index.html](/todomvc/index.html)), so no need for any locally installed files.
 ## License
 
 Open-sourced under [The MIT License](https://opensource.org/license/mit).  

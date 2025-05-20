@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/todomvc-app-css@2.4.3/index.css">
+    <title>Shed.js • TodoMVC</title>
+</head>
+
+<body>
+    <section class="todoapp">
+        <!-- Header (input for new todos) -->
+        <header class="header">
+            <h1>todos</h1>
+            <input class="new-todo" placeholder="What needs to be done?" autofocus>
+        </header>
+        <!-- Main todo list -->
+        <section class="main">
+            <ul class="todo-list">
+                <!-- Todos rendered by Shed.js will go here -->
+            </ul>
+        </section>
+        <!-- Footer (filters/counter) -->
+        <footer class="footer">
+            <span class="todo-count"></span>
+            <ul class="filters">
+                <li><a href="#/" class="selected">All</a></li>
+                <li><a href="#/active">Active</a></li>
+                <li><a href="#/completed">Completed</a></li>
+            </ul>
+        </footer>
+    </section>
+    <script type="module" src="./shedjs/module.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
