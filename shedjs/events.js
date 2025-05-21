@@ -18,7 +18,7 @@ class ShedEvent {
         // Ces événements sont ceux que nous allons écouter sur les éléments
         // Ils incluent des événements courants comme 'click', 'input', 'keydown', etc.
         // Cette liste peut être étendue pour inclure d'autres événements si nécessaire
-        this.domEvents = ['click','dblclick', 'input', 'keydown', 'scroll', 'mouseover', 'mouseout', 'change', 'submit'];
+        this.domEvents = ['click','dblclick', 'input', 'keydown', 'scroll', 'mouseover', 'mouseout', 'change', 'submit', 'keypress', 'keyup', 'blur', 'focus'];
         this.winOrDocEvents = ['resize', 'load', 'unload', 'beforeunload', 'hashchange', 'popstate', 'DOMContentLoaded'];
         this.supportedEvents = [...this.domEvents, ...this.winOrDocEvents]
     }

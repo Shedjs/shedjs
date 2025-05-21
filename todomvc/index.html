@@ -10,32 +10,23 @@
 </head>
 
 <body>
-    <section class="todoapp">
-        <!-- Header (input for new todos) -->
-        <header class="header">
+    <section class="todoapp" id="root">
+        <header class="header" data-testid="header">
             <h1>todos</h1>
-            <input class="new-todo" placeholder="What needs to be done?" autofocus>
+            <div class="input-container">
+                <input class="new-todo" id="todo-input" type="text" data-testid="text-input"
+                    placeholder="What needs to be done?" value="">
+            </div>
         </header>
-        <!-- Main todo list -->
-        <section class="main">
-            <ul class="todo-list">
-                <!-- Todos rendered by Shed.js will go here -->
-            </ul>
-        </section>
-        <!-- Footer (filters/counter) -->
-        <footer class="footer">
-            <span class="todo-count"></span>
-            <ul class="filters">
-                <li><a href="#/" class="selected">All</a></li>
-                <li><a href="#/active">Active</a></li>
-                <li><a href="#/completed">Completed</a></li>
-            </ul>
-        </footer>
+        <main class="main" data-testid="main">
+            <ul class="todo-list" data-testid="todo-list"></ul>
+        </main>
     </section>
-    <!-- this div is for temporary tests, should be removed -->
-    <div id="app"></div>
-    <script type="module" src="/shedjs/module.js"></script>
-    <script src="app.js"></script>
+    <footer class="info">
+        <p>Double-click to edit a todo</p>
+        <p>Created by the TodoMVC Team</p>
+    </footer>
+    <script type="module" src="app.js"></script>
 </body>
 
 </html>
