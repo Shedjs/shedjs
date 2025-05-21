@@ -247,3 +247,5 @@ class Dom {
         return chainable;
     }
 }
+
+export default Dom
