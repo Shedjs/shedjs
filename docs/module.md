@@ -1,4 +1,4 @@
-# Shed.js Strengths
+<h1 align="center">Shed.js Strenghts</h1>
 
 ## DOM Class
 

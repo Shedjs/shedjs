@@ -1,4 +1,4 @@
-# Error Handling
+<h1 align="center">Error Handling</h1>
 
 ## Approach
 
