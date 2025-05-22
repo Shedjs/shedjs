@@ -50,7 +50,7 @@ class ShedEvent {
      * @param {Function} callback - Fonction à exécuter lors de l'événement
      * @returns {number} ID du gestionnaire pour pouvoir le supprimer plus tard
      */
-    static onEvent(event, selector, callback) {
+    onEvent(event, selector, callback) {
         if (!this.supportedEvents.includes(event)) {
             console.warn(`Événement non supporté: ${event}`);
             return -1;
@@ -71,7 +71,7 @@ class ShedEvent {
      * @param {number} handlerId - ID du gestionnaire à supprimer
      * @returns {boolean} true si le gestionnaire a été trouvé et supprimé
      */
-    static removeEvent(handlerId) {
+    removeEvent(handlerId) {
         // console.log(`Suppression du gestionnaire d'événement avec ID: ${handlerId}`);
         const index = this.handlers.findIndex(h => h.id === handlerId);
         if (index !== -1) {
@@ -87,7 +87,7 @@ class ShedEvent {
      * Applique un gestionnaire d'événement aux éléments correspondants
      * @param {Object} handler - Gestionnaire d'événement à appliquer
      */
-    static applyEventHandler(handler) {
+    applyEventHandler(handler) {
         const { event, selector, callback, id } = handler;
         if (this.winOrDocEvents.includes(event) && (selector === 'window' || selector === 'document')) {
             const winListener = (e) => callback(e, window);
@@ -132,7 +132,7 @@ class ShedEvent {
      * Initialisation: traite les éléments existants et configure un observateur
      * pour les nouveaux éléments ajoutés au DOM
      */
-    static initEventSystem() {
+    initEventSystem() {
         this.handlers.forEach(handler => this.applyEventHandler(handler));
         const observer = new MutationObserver((mutations) => {
             let reapplyAgain = false;
