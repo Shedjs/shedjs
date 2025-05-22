@@ -2,12 +2,12 @@
 
 **Core Methods**
 
-| Methods                  | Description                              |
-|--------------------------|------------------------------------------|
-| `addRoute(path, action)` | Register the route and its handler.      |
-| `navigate(path)`         | Navigates to a specified route.          |
-| `renderRoute(path)`      | Maps a path to an action.                |
-| `renderInitialRoute()`   | Handles browser back/forward navigation. |
+| Methods                         | Description                              |
+|---------------------------------|------------------------------------------|
+| `Router.addRoute(path, action)` | Register the route and its handler.      |
+| `Router.navigate(path)`         | Navigates to a specified route.          |
+| `Router.renderRoute(path)`      | Maps a path to an action.                |
+| `Router.renderInitialRoute()`   | Handles browser back/forward navigation. |
 
 ## Example Usage
 

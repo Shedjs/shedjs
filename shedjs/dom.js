@@ -64,9 +64,9 @@ class Dom {
 
         // Handle event listeners (e.g., onClick, onInput)
         if (key.startsWith('on') && typeof value === "function") {
-            const event = key.slice(2).toLowerCase(); // Remove 'on' prefix
+            // const event = key.slice(2).toLowerCase();
             // element.addEventListener(event, value);
-            element[key.toLowerCase] = value;
+            element[key.toLowerCase()] = value;
             return; // Early return for clean control flow
         }
 
@@ -154,6 +154,54 @@ class Dom {
      */
     static createTextNode(text) {
         return document.createTextNode(String(text)); // Ensure string conversion
+    }
+
+    /**
+     * Converts a Virtual DOM (VDOM) node into a real DOM element.
+     * Recursively processes child nodes and handles primitive values.
+     * 
+     * @static
+     * @param {Object|string|number} vnode - The virtual node to convert. Can be:
+     *   - An object with `tag`, `attrs`, `children` (VDOM structure)
+     *   - A string/number (converted to text node)
+     * @returns {Node} The created DOM element or text node.
+     * 
+     * @example
+     * // VDOM input
+     * const vnode = {
+     *   tag: 'div',
+     *   attrs: { class: 'container' },
+     *   children: [
+     *     { tag: 'p', children: ['Hello'] },
+     *     'World' // Auto-converted to text node
+     *   ]
+     * };
+     * 
+     * // Usage
+     * const domElement = Dom.createFromVNode(vnode);
+     * Dom.appendChild(document.body, domElement);
+     */
+    static createFromVNode(vnode) {
+        // Handle text nodes (strings/numbers)
+        // These are leaf nodes in the VDOM tree
+        if (typeof vnode === 'string' || typeof vnode === 'number') {
+            return this.createTextNode(vnode); // Uses existing text node utility
+        }
+
+        // Create the actual DOM element for this VDOM node
+        // Uses the framework's createElement() to handle props/attributes
+        const element = this.createElement(vnode.tag, vnode.attrs || {});
+
+        // Process children recursively if they exist
+        // Note: Uses the framework's appendChild() to handle:
+        // - Arrays of children
+        // - Null/undefined values (conditional rendering)
+        // - Automatic text node conversion
+        if (vnode.children) {
+            this.appendChild(element, vnode.children); // Reuses existing Dom logic
+        }
+
+        return element;
     }
 
     /**

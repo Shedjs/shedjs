@@ -1,26 +1,46 @@
 class ShedEvent {
     constructor() {
-        // Pour stocker les gestionnaires d'événements
-        // Chaque gestionnaire est un objet contenant l'ID, le type d'événement, le sélecteur et la fonction de rappel
-        // ID est un nombre unique pour chaque gestionnaire
-        // Le sélecteur est une chaîne CSS pour cibler les éléments
-        // La fonction de callback est la fonction à exécuter lorsque l'événement se produit
+        /**
+         * Registered event handlers.
+         * @type {Array<{id: number, event: string, selector: string, callback: Function}>}
+         * @example 
+         * { id: 0, event: 'click', selector: '.btn', callback: handleClick }
+         */
         this.handlers = [];
-        
-        // Map pour suivre les éléments déjà traités par événement
-        // Chaque élément est identifié par une clé unique basée sur son tagName, ses classes et son ID
-        // La clé est une chaîne de caractères
-        // La valeur est un ensemble d'événements déjà appliqués à cet élément
-        // Cela permet d'éviter d'appliquer plusieurs fois le même gestionnaire à un même élément
+
+        /**
+         * Tracks which elements already have event listeners.
+         * Prevents duplicate bindings for the same event on the same element.
+         * @type {Map<string, Set<string>>}
+         * @example
+         * 'DIV-btn-submit-btn' → Set(['click', 'mouseover'])
+         */
         this.processedItems = new Map();
 
-        // Liste d'événements pris en charge  
-        // Ces événements sont ceux que nous allons écouter sur les éléments
-        // Ils incluent des événements courants comme 'click', 'input', 'keydown', etc.
-        // Cette liste peut être étendue pour inclure d'autres événements si nécessaire
-        this.domEvents = ['click','dblclick', 'input', 'keydown', 'scroll', 'mouseover', 'mouseout', 'change', 'submit', 'keypress', 'keyup', 'blur', 'focus'];
-        this.winOrDocEvents = ['resize', 'load', 'unload', 'beforeunload', 'hashchange', 'popstate', 'DOMContentLoaded'];
-        this.supportedEvents = [...this.domEvents, ...this.winOrDocEvents]
+        /**
+         * Supported DOM events (bound to individual elements).
+         * @type {string[]}
+         */
+        this.domEvents = [
+            'click', 'dblclick', 'input', 'keydown', 'scroll',
+            'mouseover', 'mouseout', 'change', 'submit',
+            'keypress', 'keyup', 'blur', 'focus'
+        ];
+
+        /**
+         * Supported window/document events (global scope).
+         * @type {string[]}
+         */
+        this.winOrDocEvents = [
+            'resize', 'load', 'unload', 'beforeunload',
+            'hashchange', 'popstate', 'DOMContentLoaded'
+        ];
+
+        /**
+         * All allowed event types (DOM + window/document).
+         * @type {string[]}
+         */
+        this.supportedEvents = [...this.domEvents, ...this.winOrDocEvents];
     }
 
     /**
@@ -30,7 +50,7 @@ class ShedEvent {
      * @param {Function} callback - Fonction à exécuter lors de l'événement
      * @returns {number} ID du gestionnaire pour pouvoir le supprimer plus tard
      */
-    onEvent(event, selector, callback) {
+    static onEvent(event, selector, callback) {
         if (!this.supportedEvents.includes(event)) {
             console.warn(`Événement non supporté: ${event}`);
             return -1;
@@ -45,12 +65,13 @@ class ShedEvent {
 
         return id;
     }
+
     /**
- * Supprime un gestionnaire d'événement par son ID
- * @param {number} handlerId - ID du gestionnaire à supprimer
- * @returns {boolean} true si le gestionnaire a été trouvé et supprimé
- */
-    removeEvent(handlerId) {
+     * Supprime un gestionnaire d'événement par son ID
+     * @param {number} handlerId - ID du gestionnaire à supprimer
+     * @returns {boolean} true si le gestionnaire a été trouvé et supprimé
+     */
+    static removeEvent(handlerId) {
         // console.log(`Suppression du gestionnaire d'événement avec ID: ${handlerId}`);
         const index = this.handlers.findIndex(h => h.id === handlerId);
         if (index !== -1) {
@@ -61,16 +82,18 @@ class ShedEvent {
 
         return false;
     }
+
     /**
- * Applique un gestionnaire d'événement aux éléments correspondants
- * @param {Object} handler - Gestionnaire d'événement à appliquer
- */
-    applyEventHandler(handler) {
+     * Applique un gestionnaire d'événement aux éléments correspondants
+     * @param {Object} handler - Gestionnaire d'événement à appliquer
+     */
+    static applyEventHandler(handler) {
         const { event, selector, callback, id } = handler;
         if (this.winOrDocEvents.includes(event) && (selector === 'window' || selector === 'document')) {
             const winListener = (e) => callback(e, window);
             handler._winListener = winListener;
-            window.addEventListener(event, winListener);
+            // window.addEventListener(event, winListener);
+            window[`on${event}`] = winListener; // ⚠️ Inline assignment
             return;
         }
 
@@ -89,14 +112,14 @@ class ShedEvent {
 
                 if (!elementEvents.has(event)) {
                     elementEvents.add(event);
-
-                    el.addEventListener(event, (e) => {
+                    // el.addEventListener(event, (e) => {
+                    el[`on${event}`] = (e) => { // ⚠️ Inline assignment
                         this.handlers.forEach(h => {
                             if (h.event === event && el.matches(h.selector)) {
                                 h.callback(e, el);
                             }
                         });
-                    });
+                    };
                 }
             });
         } catch (error) {
@@ -109,7 +132,7 @@ class ShedEvent {
      * Initialisation: traite les éléments existants et configure un observateur
      * pour les nouveaux éléments ajoutés au DOM
      */
-    initEventSystem() {
+    static initEventSystem() {
         this.handlers.forEach(handler => this.applyEventHandler(handler));
         const observer = new MutationObserver((mutations) => {
             let reapplyAgain = false;
@@ -129,23 +152,22 @@ class ShedEvent {
         });
 
         if (document.body) {
-
             observer.observe(document.body, {
                 childList: true,
                 subtree: true
             });
         } else {
             console.warn('Le body du document n\'est pas encore disponible pour l\'observateur.');
-            window.addEventListener('DOMContentLoaded', () => {
+            // window.addEventListener('DOMContentLoaded', () => {
+            window.onload = () => { // ⚠️ Inline fallback (less ideal)
                 observer.observe(document.body, {
                     childList: true,
                     subtree: true
                 });
-            });
+            };
         }
         console.log('Système event initialisé');
     }
-
 }
 
 export default ShedEvent;

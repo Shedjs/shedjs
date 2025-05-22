@@ -1,4 +1,4 @@
-# Event handling
+# Event Handling
 
 Event handling with Shed js elements is similar to event handling with DOM elements, such as ``addEventListener``.
 There are a few differences in syntax, Shed offers an APi:
@@ -40,37 +40,43 @@ Removes an event handler using its ID
  and the function returns false.
 
 ## Example
-<b>Add a handler for a click on a button with Shed
-```javascript
+
+- **Add a handler for a click on a button with Shed**
+
+```js
 import {ShedEvent} from 'events.js'
 
 const handlerId = ShedEvent.onEvent('click', "#btn", () => {
  console.log('Button clicked !!');
 })
+
 // Displays: "Event handler added with ID: 0 => click on #btn"
 console.log(handlerID) // displays 0
 ```
-<b>Remove the handler with Shed
-```javascript
+
+- **Remove the handler with Shed**
+
+```js
 import {ShedEvent} from 'events.js'
 
 ShedEvent.removeEvent(handlerID)
+
 // Display : "Event handler removed with ID: 0"
 console.log(handlerID) // display 0
 
 // Try to remove a non-existent ID, like
-ShedEvent.removeEvent(99)// You get an error message like this: No handler with this ID: 99
+ShedEvent.removeEvent(99) // You get an error message like this: No handler with this ID: 99
 ```
-<b>Resize the window with Shed
-```javascript
+
+- **Resize the window with Shed**
+
+```js
 import {ShedEvent} from 'events.js'
 
 const handlerId = ShedEvent.onEvent('resize', 'window', () => {
  console.log('Window resized !!');
 })
 ```
-
-
 
 ## Good practices
 

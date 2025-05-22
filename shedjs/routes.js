@@ -24,9 +24,10 @@ class Router {
 
         this.renderRoute(path)
         // Listen for changes in the hash (back/forward navigation)
-        window.addEventListener("hashchange", () => {
+        // window.addEventListener("hashchange", () => {
+        window.onhashchange = () => { // ⚠️ Inline assignment
             this.renderRoute(window.location.hash.slice(1))
-        })
+        };
     }
 }
 
