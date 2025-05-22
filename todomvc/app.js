@@ -5,6 +5,7 @@ const todoInput = document.getElementById('todo-input');
 const todoListEl = document.querySelector('.todo-list');
 
 let todos = [];
+let currentFilter = 'all'; 
 
 function loadTodos() {
     const storedTodos = localStorage.getItem('todos');
@@ -21,65 +22,83 @@ function escapeHTML(str) {
     return p.innerHTML;
 }
 
-function renderTodos() {
+function renderTodos(filter = 'all') {
+    currentFilter = filter; 
     todoListEl.innerHTML = '';
+    
+    // Filter todos based on the selected filter
+    const filteredTodos = todos.filter(todo => {
+        if (filter === 'active') return !todo.completed;
+        if (filter === 'completed') return todo.completed;
+        return true; 
+    });
 
     const footer = Dom.createElement('footer');
     const div = Dom.createElement('div');
     div.classList.add("toggle-all-container");
 
-    todos.forEach(todo => {
-        const li = Dom.createElement('li');
+    // Only render the toggle-all checkbox if there are todos
+    if (todos.length > 0) {
+        div.innerHTML = `
+            <input class="toggle-all" type="checkbox" 
+                   ${todos.every(t => t.completed) ? 'checked' : ''} 
+                   id="toggle-all" data-testid="toggle-all">
+            <label for="toggle-all">Mark all as complete</label>
+        `;
+        Dom.appendChild(todoListEl, div);
+    }
 
+    // Render the filtered todos
+    filteredTodos.forEach(todo => {
+        const li = Dom.createElement('li');
         li.dataset.id = todo.id;
 
         if (todo.completed) {
             li.classList.add('completed');
         }
-        div.innerHTML = `
-        <input class="toggle-all" type="checkbox"  ${todo.completed ? 'checked' : ''} id="toggle-all" data-testid="toggle-all">
-        <label  for="toggle-all">Mark all as complete</label>
-        `
+
         li.innerHTML = `
-        <div class="view">
-        <input class="toggle" type="checkbox" ${todo.completed ? 'checked' : ''}>
-        <label>${escapeHTML(todo.text)}</label>
-        <button class="destroy"></button>
-        </div>
-        <input class="edit" value="${escapeHTML(todo.text)}">
-        `;
-        footer.innerHTML = `
-        <span class="todo-count">
-        <strong>${todos.filter(t => !t.completed).length}</strong> item${todos.filter(t => !t.completed).length === 1 ? '' : 's'} left
-        </span>
-        <ul class="filters" data-testid="footer-navigation">
-        <li>
-        <a class="selected" href="#/">All</a>
-        </li>
-        <li>
-        <a href="#/active">Active</a>
-        </li>
-        <li>
-        <a href="#/completed">Completed</a>
-        </li>
-        </ul>
-        <button class="clear-completed" disabled>Clear completed</button>
+            <div class="view">
+                <input class="toggle" type="checkbox" ${todo.completed ? 'checked' : ''}>
+                <label>${escapeHTML(todo.text)}</label>
+                <button class="destroy"></button>
+            </div>
+            <input class="edit" value="${escapeHTML(todo.text)}">
         `;
         
-        footer.classList.add("footer")
-        Dom.appendChild(todoListEl, li)
-        Dom.appendChild(todoListEl, footer);
-        Dom.appendChild(todoListEl, div);
-
+        Dom.appendChild(todoListEl, li);
     });
+
+    // Render footer
+    footer.innerHTML = `
+        <span class="todo-count">
+            <strong>${todos.filter(t => !t.completed).length}</strong> 
+            item${todos.filter(t => !t.completed).length === 1 ? '' : 's'} left
+        </span>
+        <ul class="filters" data-testid="footer-navigation">
+            <li>
+                <a class="${filter === 'all' ? 'selected' : ''}" href="#/">All</a>
+            </li>
+            <li>
+                <a class="${filter === 'active' ? 'selected' : ''}" href="#/active">Active</a>
+            </li>
+            <li>
+                <a class="${filter === 'completed' ? 'selected' : ''}" href="#/completed">Completed</a>
+            </li>
+        </ul>
+        <button class="clear-completed" ${todos.some(t => t.completed) ? '' : 'disabled'}>
+            Clear completed
+        </button>
+    `;
+    
+    footer.classList.add("footer");
+    Dom.appendChild(todoListEl, footer);
 }
 
 function addTodo(event) {
     if (event.key === 'Enter') {
         const text = todoInput.value.trim();
-        if (text === '') {
-            return;
-        }
+        if (text === '') return;
 
         todos.push({
             id: Date.now(),
@@ -87,16 +106,16 @@ function addTodo(event) {
             completed: false
         });
 
-        todoInput.value = ''; // Clear input
+        todoInput.value = '';
         saveTodos();
-        renderTodos();
+        renderTodos(currentFilter);
     }
 }
 
 function deleteTodo(id) {
     todos = todos.filter(todo => todo.id !== id);
     saveTodos();
-    renderTodos();
+    renderTodos(currentFilter); 
 }
 
 function toggleTodo(id) {
@@ -104,7 +123,7 @@ function toggleTodo(id) {
         todo.id === id ? { ...todo, completed: !todo.completed } : todo
     );
     saveTodos();
-    renderTodos();
+    renderTodos(currentFilter); 
 }
 
 function startEditing(id, liElement) {
@@ -125,8 +144,20 @@ function finishEditing(id, liElement, newText) {
             todo.id === id ? { ...todo, text: text } : todo
         );
         saveTodos();
-        renderTodos();
+        renderTodos(currentFilter); 
     }
+}
+
+// Handle initial filter from URL hash
+function handleInitialFilter() {
+    const hash = window.location.hash.substring(1); 
+    let filter = 'all';
+    
+    if (hash === '/active') filter = 'active';
+    else if (hash === '/completed') filter = 'completed';
+    else if (hash === '/' || hash === '') filter = 'all';
+    
+    renderTodos(filter);
 }
 
 let shedEvent = new Event()
@@ -135,6 +166,23 @@ shedEvent.initEventSystem();
 // add event Shedjs
 shedEvent.onEvent('keypress', '#todo-input', addTodo);
 
+shedEvent.onEvent('click', '.filters a', (event) => {
+    event.preventDefault();
+    const target = event.target;
+    
+    // Get the filter type from href 
+    const href = target.getAttribute('href');
+    let filter = 'all';
+    
+    if (href === '#/active') filter = 'active';
+    else if (href === '#/completed') filter = 'completed';
+    else if (href === '#/') filter = 'all';
+    
+    // Update URL and re-render
+    window.location.hash = href.substring(1); // Remove the # for hash
+    renderTodos(filter);
+});
+
 shedEvent.onEvent('click', '.todo-list', (event) => {
     const target = event.target;
 
@@ -142,7 +190,7 @@ shedEvent.onEvent('click', '.todo-list', (event) => {
         const markAsCompleted = target.checked;
         todos = todos.map(todo => ({ ...todo, completed: markAsCompleted }));
         saveTodos();
-        renderTodos();
+        renderTodos(currentFilter); 
         return;
     }
 
@@ -156,7 +204,6 @@ shedEvent.onEvent('click', '.todo-list', (event) => {
         }
         return;
     }
-
 });
 
 shedEvent.onEvent('dblclick', '.todo-list', event => {
@@ -190,17 +237,13 @@ shedEvent.onEvent('keyup', '.todo-list', event => {
             finishEditing(todoId, li, target.value);
         } else if (event.key === 'Escape') {
             li.classList.remove('editing');
-            renderTodos();
+            renderTodos(currentFilter); 
         }
     }
 });
 
-// shedEvent.onEvent('unbeforeunload', '#todo-input', event => {
-//     if (todoInput.value.trim() !== '') {
-//        //supprimer localestorage
-//         localStorage.removeItem('todos');
-//     }
-// });
-
 loadTodos();
-renderTodos();
+handleInitialFilter();
+
+// Handle hash changes
+window.addEventListener('hashchange', handleInitialFilter);
