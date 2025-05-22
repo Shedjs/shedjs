@@ -8,9 +8,7 @@ let todos = [];
 
 function loadTodos() {
     const storedTodos = localStorage.getItem('todos');
-    if (storedTodos) {
-        todos = JSON.parse(storedTodos);
-    }
+    if (storedTodos) todos = JSON.parse(storedTodos);
 }
 
 function saveTodos() {

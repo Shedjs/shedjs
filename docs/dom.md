@@ -1,5 +1,37 @@
 <h1 align="center">DOM Manipulation</h1>
 
+## Presentation
+
+Dom is the only class that's designed in a singleton pattern with static methods, so no instances are needed, this is the correct choice for the following reasons:
+
+1. **Stateless Operations**
+
+    - DOM methods like `createElement()` and `setAttribute()` are pure functions.
+    - No instance-specific data needed → No memory overhead.
+
+2. **Global Access Pattern**
+
+```js
+    // More intuitive than instantiating a "DOM manager"
+    Dom.createElement('div') 
+    // vs
+    new DomManager().createElement('div') // 🤮 Over-engineering
+```
+
+3. **Performance Optimisation**
+
+    - Direct access top the class, no step-by-step lookup, as there's no instance:
+    - Static calls avoid prototype chain lookups in modern JS engines.
+    - No constructor/instance initialization overhead.
+
+4. **Industry Standard**
+
+    - React: `React.createElement()`
+    - Vue: `h()` (hyperscript helper)
+    - Svelte: `document.createElement()`
+
+## Methods
+
 | Methods                                      | Description                                                                |
 |----------------------------------------------|----------------------------------------------------------------------------|
 | `Dom.createElement(tag, props, ...children)` | Create a DOM element with attributes and child nodes.                      |
@@ -9,8 +41,6 @@
 | `Dom.createFromVNode(vnode)`                 | Convert a virtual DOM-like structure into real DOM nodes.                  |
 | `Dom.render(element, container)`             | Insert a DOM element into a container after clearing its contents.         |
 | `Dom.renderChainable(element, container)`    | render a DOM element to a container and then return a chainable interface. |
-
-----
 
 ### 1. `createElement(tag, props, ...children)`
 

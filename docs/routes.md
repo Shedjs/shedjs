@@ -2,60 +2,60 @@
 
 **Core Methods**
 
-| Methods                         | Description                              |
-|---------------------------------|------------------------------------------|
-| `Router.addRoute(path, action)` | Register the route and its handler.      |
-| `Router.navigate(path)`         | Navigates to a specified route.          |
-| `Router.renderRoute(path)`      | Maps a path to an action.                |
-| `Router.renderInitialRoute()`   | Handles browser back/forward navigation. |
+| Methods                           | Description                              |
+|-----------------------------------|------------------------------------------|
+| `Instance.addRoute(path, action)` | Register the route and its handler.      |
+| `Instance.navigate(path)`         | Navigates to a specified route.          |
+| `Instance.renderRoute(path)`      | Maps a path to an action.                |
+| `Instance.renderInitialRoute()`   | Handles browser back/forward navigation. |
 
 ## Example Usage
 
 * example 1 : `addRoute` and `renderInitialRoute`
 ```js
-import Router from './Router.js';
+import Route from './Routes.js';
 
-const router = new Router();
+const route = new Route();
 
-router.addRoute('/', () => {
+route.addRoute('/', () => {
     document.body.textContent = 'Home Page';
 });
-router.addRoute('/about', () => {
+route.addRoute('/about', () => {
     document.body.textContent = 'About Page';
 });
 
-router.renderInitialRoute(); // Displays the page corresponding to the current URL
+route.renderInitialRoute(); // Displays the page corresponding to the current URL
 ```
 
 * example 2 : `navigate`
 ```js
-import Router from './Router.js';
+import Route from './Routes.js';
 
-const router = new Router();
+const route = new Route();
 
-router.addRoute('/', () => {
+route.addRoute('/', () => {
     document.body.textContent = 'Home';
 });
-router.addRoute('/about', () => {
+route.addRoute('/about', () => {
     document.body.textContent = 'About';
 });
 
-router.renderInitialRoute();
+route.renderInitialRoute();
 
 setTimeout(() => {
-    router.navigate('/about'); // Changes the route to "/about"
+    route.navigate('/about'); // Changes the route to "/about"
 }, 2000);
 ```
 
 * example 3 : `renderRoute`
 ```js
-import Router from './Router.js';
+import Route from './Routes.js';
 
-const router = new Router();
+const route = new Route();
 
-router.addRoute('/contact', () => {
+route.addRoute('/contact', () => {
     document.body.textContent = 'Contact Page';
 });
 
-router.renderRoute('/contact'); // Displays the "Contact Page" without changing the URL
+route.renderRoute('/contact'); // Displays the "Contact Page" without changing the URL
 ```

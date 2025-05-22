@@ -1,9 +1,9 @@
-import Router from "./routes.js";
+import Route from "./routes.js";
 import Dom from "./dom.js"
 
 function main() {
-    const router = new Router();
-    const Event = new Event();
+    const route = new Route();
+    const event = new Event();
     
     // Create paragraph element
     const elm = Dom.createElement("p", { 
@@ -29,10 +29,10 @@ function main() {
     app.appendChild(input);
 
     // Initialize event system
-    Event.initEventSystem();
+    event.initEventSystem();
 
     // Add event listener using Event
-    Event.onEvent("input", "#name-input", (e, el) => {
+    event.onEvent("input", "#name-input", (e, el) => {
         const displayText = document.getElementById('display-text');
         displayText.textContent = el.value || "hello";
     });
