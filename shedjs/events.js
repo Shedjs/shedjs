@@ -1,4 +1,6 @@
-class ShedEvent {
+import {FrameworkError} from "./errors.js"
+
+class Event {
     constructor() {
         /**
          * Registered event handlers.
@@ -52,8 +54,21 @@ class ShedEvent {
      */
     onEvent(event, selector, callback) {
         if (!this.supportedEvents.includes(event)) {
-            console.warn(`Événement non supporté: ${event}`);
-            return -1;
+            throw new FrameworkError(
+                'EVENT',
+                'UNSUPPORTED_EVENT',
+                `Event "${event}" is not supported`,
+                { supportedEvents: this.supportedEvents }
+            );
+        }
+
+        if (typeof callback !== 'function') {
+            throw new FrameworkError(
+                'EVENT',
+                'INVALID_CALLBACK',
+                'Callback must be a function',
+                { received: typeof callback }
+            );
         }
 
         const id = this.handlers.length;
@@ -133,6 +148,11 @@ class ShedEvent {
      * pour les nouveaux éléments ajoutés au DOM
      */
     initEventSystem() {
+        if (this._initialized) {
+            console.warn('[Framework] Event system already initialized');
+            return;
+        }
+
         this.handlers.forEach(handler => this.applyEventHandler(handler));
         const observer = new MutationObserver((mutations) => {
             let reapplyAgain = false;
@@ -170,4 +190,4 @@ class ShedEvent {
     }
 }
 
-export default ShedEvent;
+export default Event;

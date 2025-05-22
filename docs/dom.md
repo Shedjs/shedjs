@@ -1,6 +1,5 @@
 <h1 align="center">DOM Manipulation</h1>
 
-
 | Methods                                      | Description                                                                |
 |----------------------------------------------|----------------------------------------------------------------------------|
 | `Dom.createElement(tag, props, ...children)` | Create a DOM element with attributes and child nodes.                      |
@@ -11,7 +10,7 @@
 | `Dom.render(element, container)`             | Insert a DOM element into a container after clearing its contents.         |
 | `Dom.renderChainable(element, container)`    | render a DOM element to a container and then return a chainable interface. |
 
-## Basic Methods
+----
 
 ### 1. `createElement(tag, props, ...children)`
 

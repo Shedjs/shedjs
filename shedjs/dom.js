@@ -59,7 +59,12 @@ class Dom {
      */
     static setAttribute(element, key, value) {
         if (!(element instanceof Node)) {
-            throw new Error('Invalid element provided');
+            throw new FrameworkError(
+                'DOM',
+                'INVALID_NODE',
+                `Expected valid DOM Node for setAttribute()`,
+                { received: element?.constructor?.name, key, value }
+            );
         }
 
         // Handle event listeners (e.g., onClick, onInput)
@@ -229,8 +234,14 @@ class Dom {
     static render(element, container) {
         // Validate inputs with detailed errors
         if (!(container instanceof Node)) {
-            throw new Error(`Invalid container: Expected DOM Node, got ${container?.constructor?.name}`);
+            throw new FrameworkError(
+                'DOM',
+                'INVALID_CONTAINER',
+                'Container must be a DOM element',
+                { received: container?.constructor?.name }
+            );
         }
+
         if (!(element instanceof Node)) {
             throw newError(`Invalid element: Expected DOM Node, got ${element?.constructor?.name}`);
         }

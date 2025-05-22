@@ -1,4 +1,4 @@
-import ShedEvent from "../shedjs/events.js";
+import Event from "../shedjs/events.js";
 
 const todoInput = document.getElementById('todo-input');
 const todoListEl = document.querySelector('.todo-list');
@@ -6,7 +6,6 @@ const todoListEl = document.querySelector('.todo-list');
 let todos = [];
 
 function loadTodos() {
-    
     const storedTodos = localStorage.getItem('todos');
     if (storedTodos) {
         todos = JSON.parse(storedTodos);
@@ -123,7 +122,7 @@ function finishEditing(id, liElement, newText) {
     }
 }
 
-let shedEvent = new ShedEvent()
+let shedEvent = new Event()
 shedEvent.initEventSystem();
 
 // add event Shedjs
@@ -179,12 +178,12 @@ shedEvent.onEvent('keyup', '.todo-list', event => {
     }
 });
 
-shedEvent.onEvent('unbeforeunload', '#todo-input', event => {
-    if (todoInput.value.trim() !== '') {
-       //supprimer localestorage
-        localStorage.removeItem('todos');
-    }
-});
+// shedEvent.onEvent('unbeforeunload', '#todo-input', event => {
+//     if (todoInput.value.trim() !== '') {
+//        //supprimer localestorage
+//         localStorage.removeItem('todos');
+//     }
+// });
 
 loadTodos();
 renderTodos();

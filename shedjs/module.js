@@ -1,10 +1,9 @@
 import Router from "./routes.js";
-import  ShedEvent from "./events.js";
 import Dom from "./dom.js"
 
 function main() {
     const router = new Router();
-    const shedEvent = new ShedEvent();
+    const Event = new Event();
     
     // Create paragraph element
     const elm = Dom.createElement("p", { 
@@ -30,10 +29,10 @@ function main() {
     app.appendChild(input);
 
     // Initialize event system
-    shedEvent.initEventSystem();
+    Event.initEventSystem();
 
-    // Add event listener using ShedEvent
-    shedEvent.onEvent("input", "#name-input", (e, el) => {
+    // Add event listener using Event
+    Event.onEvent("input", "#name-input", (e, el) => {
         const displayText = document.getElementById('display-text');
         displayText.textContent = el.value || "hello";
     });
