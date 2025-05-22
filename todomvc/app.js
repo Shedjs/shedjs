@@ -1,4 +1,5 @@
 import Event from "../shedjs/events.js";
+import Dom from "../shedjs/dom.js";
 
 const todoInput = document.getElementById('todo-input');
 const todoListEl = document.querySelector('.todo-list');
@@ -17,17 +18,17 @@ function saveTodos() {
 }
 
 function escapeHTML(str) {
-    const p = document.createElement('p');
-    p.appendChild(document.createTextNode(str));
+    const p = Dom.createElement('p');
+    Dom.appendChild(p, Dom.createTextNode(str));
     return p.innerHTML;
 }
 
 function renderTodos() {
     todoListEl.innerHTML = '';
 
-    const footer = document.createElement('footer');
+    const footer = Dom.createElement('footer');
     todos.forEach(todo => {
-        const li = document.createElement('li');
+        const li = Dom.createElement('li');
 
         li.dataset.id = todo.id;
         if (todo.completed) {
@@ -41,7 +42,7 @@ function renderTodos() {
             </div>
             <input class="edit" value="${escapeHTML(todo.text)}">
         `;
-        todoListEl.appendChild(li);
+        Dom.appendChild(todoListEl, li)
 
     });
     footer.innerHTML = `
@@ -63,7 +64,7 @@ function renderTodos() {
             <button class="clear-completed" disabled>Clear completed</button>
             </footer>
         `;
-    todoListEl.appendChild(footer);
+    Dom.appendChild(todoListEl, footer);
     saveTodos();
 }
 
