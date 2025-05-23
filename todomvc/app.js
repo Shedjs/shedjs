@@ -246,4 +246,12 @@ loadTodos();
 handleInitialFilter();
 
 // Handle hash changes
-window.addEventListener('hashchange', handleInitialFilter);
+shedEvent.onEvent('hashchange', window, () => {
+    handleInitialFilter();
+});
+
+shedEvent.onEvent('click', '.clear-completed', () => {
+    todos = todos.filter(todo => !todo.completed);
+    saveTodos();
+    renderTodos(currentFilter); 
+});

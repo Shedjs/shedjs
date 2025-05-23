@@ -300,7 +300,8 @@ body {
 
 .todo-count {
     float: left;
-    text-align: left
+    text-align: left;
+    font-size: 15px;
 }
 
 .todo-count strong {
@@ -326,7 +327,8 @@ body {
     color: inherit;
     margin: 3px;
     padding: 3px 7px;
-    text-decoration: none
+    text-decoration: none;
+    font-size: 15px;
 }
 
 .filters li a:hover {
@@ -343,7 +345,8 @@ html .clear-completed:active {
     float: right;
     line-height: 19px;
     position: relative;
-    text-decoration: none
+    text-decoration: none;
+    font-size: 15px;
 }
 
 .clear-completed:hover {
