@@ -163,7 +163,26 @@ body {
     font-size: 22px;
     padding: 10px 27px;
     -webkit-transform: rotate(90deg);
-    transform: rotate(90deg)
+    transform: rotate(90deg);
+    cursor: pointer;
+}
+
+.toggle-all + label:hover:after {
+    content: "Mark all";
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 17px;
+    white-space: nowrap;
+    background: #f5f5f5;
+    padding: 2px 5px;
+    border-radius: 3px;
+    color: #737373;
+}
+
+.toggle-all + label:hover {
+    color: #737373;
 }
 
 .toggle-all:checked+label:before {
@@ -267,7 +286,7 @@ body {
     line-height: 1.1
 }
 
-.todo-list li:hover .destroy {
+.todo-list li .destroy {
     display: block
 }
 
@@ -534,7 +553,7 @@ hr {
 }
 
 .learn-bar>.learn {
-    background-color: hsla(0, 0%, 100%, .6);
+    background-color: hsla(0, 7%, 24%, 0.6);
     border-radius: 5px;
     left: -300px;
     padding: 10px;
@@ -543,6 +562,22 @@ hr {
     transition-duration: .5s;
     transition-property: left;
     width: 272px
+}
+
+@media (max-width: 560px) {
+    body {
+        padding: 0 0.5rem;
+    }
+    
+    .todoapp h1 {
+        font-size: 70px;
+        font-weight: 150;
+    }
+
+    .new-todo{
+        font-size: 18px;
+    }
+
 }
 
 @media (min-width:899px) {
