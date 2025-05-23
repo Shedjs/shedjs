@@ -5,7 +5,7 @@ const todoInput = document.getElementById('todo-input');
 const todoListEl = document.querySelector('.todo-list');
 
 let todos = [];
-let currentFilter = 'all'; 
+let currentFilter = 'all';
 
 function loadTodos() {
     const storedTodos = localStorage.getItem('todos');
@@ -23,14 +23,14 @@ function escapeHTML(str) {
 }
 
 function renderTodos(filter = 'all') {
-    currentFilter = filter; 
+    currentFilter = filter;
     todoListEl.innerHTML = '';
-    
+
     // Filter todos based on the selected filter
     const filteredTodos = todos.filter(todo => {
         if (filter === 'active') return !todo.completed;
         if (filter === 'completed') return todo.completed;
-        return true; 
+        return true;
     });
 
     const footer = Dom.createElement('footer');
@@ -48,26 +48,48 @@ function renderTodos(filter = 'all') {
         Dom.appendChild(todoListEl, div);
     }
 
-    // Render the filtered todos
-    filteredTodos.forEach(todo => {
-        const li = Dom.createElement('li');
-        li.dataset.id = todo.id;
 
-        if (todo.completed) {
-            li.classList.add('completed');
-        }
+    // this condition for delete the footer when no tasks yet
+    if (filter === 'all' && filteredTodos.length === 0) {
+        return
+    }
 
-        li.innerHTML = `
-            <div class="view">
-                <input class="toggle" type="checkbox" ${todo.completed ? 'checked' : ''}>
-                <label>${escapeHTML(todo.text)}</label>
-                <button class="destroy"></button>
-            </div>
-            <input class="edit" value="${escapeHTML(todo.text)}">
-        `;
-        
-        Dom.appendChild(todoListEl, li);
-    });
+    // this condition for display a message when no tasks active 
+    if (filter === 'active' && filteredTodos.length === 0) {
+        const emptyMessage = Dom.createElement('div');
+        emptyMessage.classList.add('empty-message');
+        emptyMessage.textContent = 'No active tasks found!';
+        Dom.appendChild(todoListEl, emptyMessage);
+    }
+
+    // this condition for display a message when no tasks completed yet
+    if (filter === 'completed' && filteredTodos.length === 0) {
+        const emptyMessage = Dom.createElement('div');
+        emptyMessage.classList.add('empty-message');
+        emptyMessage.textContent = 'No completed tasks yet!';
+        Dom.appendChild(todoListEl, emptyMessage);
+    } else {
+        // Render the filtered todos
+        filteredTodos.forEach(todo => {
+            const li = Dom.createElement('li');
+            li.dataset.id = todo.id;
+
+            if (todo.completed) {
+                li.classList.add('completed');
+            }
+
+            li.innerHTML = `
+                <div class="view">
+                    <input class="toggle" type="checkbox" ${todo.completed ? 'checked' : ''}>
+                    <label>${escapeHTML(todo.text)}</label>
+                    <button class="destroy"></button>
+                </div>
+                <input class="edit" value="${escapeHTML(todo.text)}">
+            `;
+
+            Dom.appendChild(todoListEl, li);
+        });
+    }
 
     // Render footer
     footer.innerHTML = `
@@ -90,7 +112,7 @@ function renderTodos(filter = 'all') {
             Clear completed
         </button>
     `;
-    
+
     footer.classList.add("footer");
     Dom.appendChild(todoListEl, footer);
 }
@@ -115,7 +137,7 @@ function addTodo(event) {
 function deleteTodo(id) {
     todos = todos.filter(todo => todo.id !== id);
     saveTodos();
-    renderTodos(currentFilter); 
+    renderTodos(currentFilter);
 }
 
 function toggleTodo(id) {
@@ -123,7 +145,7 @@ function toggleTodo(id) {
         todo.id === id ? { ...todo, completed: !todo.completed } : todo
     );
     saveTodos();
-    renderTodos(currentFilter); 
+    renderTodos(currentFilter);
 }
 
 function startEditing(id, liElement) {
@@ -144,19 +166,19 @@ function finishEditing(id, liElement, newText) {
             todo.id === id ? { ...todo, text: text } : todo
         );
         saveTodos();
-        renderTodos(currentFilter); 
+        renderTodos(currentFilter);
     }
 }
 
 // Handle initial filter from URL hash
 function handleInitialFilter() {
-    const hash = window.location.hash.substring(1); 
+    const hash = window.location.hash.substring(1);
     let filter = 'all';
-    
+
     if (hash === '/active') filter = 'active';
     else if (hash === '/completed') filter = 'completed';
     else if (hash === '/' || hash === '') filter = 'all';
-    
+
     renderTodos(filter);
 }
 
@@ -169,15 +191,15 @@ shedEvent.onEvent('keypress', '#todo-input', addTodo);
 shedEvent.onEvent('click', '.filters a', (event) => {
     event.preventDefault();
     const target = event.target;
-    
+
     // Get the filter type from href 
     const href = target.getAttribute('href');
     let filter = 'all';
-    
+
     if (href === '#/active') filter = 'active';
     else if (href === '#/completed') filter = 'completed';
     else if (href === '#/') filter = 'all';
-    
+
     // Update URL and re-render
     window.location.hash = href.substring(1); // Remove the # for hash
     renderTodos(filter);
@@ -190,7 +212,7 @@ shedEvent.onEvent('click', '.todo-list', (event) => {
         const markAsCompleted = target.checked;
         todos = todos.map(todo => ({ ...todo, completed: markAsCompleted }));
         saveTodos();
-        renderTodos(currentFilter); 
+        renderTodos(currentFilter);
         return;
     }
 
@@ -237,7 +259,7 @@ shedEvent.onEvent('keyup', '.todo-list', event => {
             finishEditing(todoId, li, target.value);
         } else if (event.key === 'Escape') {
             li.classList.remove('editing');
-            renderTodos(currentFilter); 
+            renderTodos(currentFilter);
         }
     }
 });
@@ -253,5 +275,5 @@ shedEvent.onEvent('hashchange', window, () => {
 shedEvent.onEvent('click', '.clear-completed', () => {
     todos = todos.filter(todo => !todo.completed);
     saveTodos();
-    renderTodos(currentFilter); 
+    renderTodos(currentFilter);
 });

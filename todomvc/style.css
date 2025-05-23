@@ -245,12 +245,12 @@ body {
     bottom: 0;
     color: #949494;
     display: none;
-    font-size: 30px;
+    font-size: 16px;
     height: 40px;
     margin: auto 0;
     position: absolute;
     right: 10px;
-    top: 0;
+    cursor: pointer;
     transition: color .2s ease-out;
     width: 40px
 }
@@ -261,7 +261,7 @@ body {
 }
 
 .todo-list li .destroy:after {
-    content: "×";
+    content: "🗑️";
     display: block;
     height: 100%;
     line-height: 1.1
@@ -306,6 +306,15 @@ body {
 
 .todo-count strong {
     font-weight: 300
+}
+
+.empty-message {
+    padding: 20px;
+    text-align: center;
+    color: #777;
+    font-style: italic;
+    border-top: 1px solid #ededed;
+    margin-top: 10px;
 }
 
 .filters {
