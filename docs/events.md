@@ -11,10 +11,10 @@ This documentation specifically supports the two main functions: `onEvent` and `
 
 | Methods                                       | Description                                                                             |
 |-----------------------------------------------|-----------------------------------------------------------------------------------------|
-| `Instance.onEvent(event, selector, callback)` | Registers an event handler to elements matching the CSS selector, returns handler ID.   |
-| `Instance.removeEvent(handlerId)`             | Removes an event handler by its ID, returns true if successful.                         |
-| `Instance.applyEventHandler(handler)`         | Attaches the event handler to matching elements (or window/document).                   |
-| `Instance.initEventSystem()`                  | Initializes event handling for existing and future DOM elements using MutationObserver. |
+| `instance.onEvent(event, selector, callback)` | Registers an event handler to elements matching the CSS selector, returns handler ID.   |
+| `instance.removeEvent(handlerId)`             | Removes an event handler by its ID, returns true if successful.                         |
+| `instance.applyEventHandler(handler)`         | Attaches the event handler to matching elements (or window/document).                   |
+| `instance.initEventSystem()`                  | Initializes event handling for existing and future DOM elements using MutationObserver. |
 
 ## API
 

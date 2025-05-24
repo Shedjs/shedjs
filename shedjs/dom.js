@@ -25,9 +25,10 @@ class Dom {
                 element.appendChild(document.createTextNode(child));
             } else if (child instanceof Node) {
                 // Append existing DOM nodes directly
-                element.appendChild(child)
+                element.appendChild(child);
+            } else {
+                console.warn('Unsupported child type ignored:', child);
             }
-            // Note: Silently skips other types (boolean, number, etc.)
         });
 
         return element;
@@ -139,12 +140,11 @@ class Dom {
         // Convert primitives to text nodes
         if (typeof child === 'string' || typeof child === 'number') {
             child = Dom.createTextNode(child.toString());
+        } else if (child instanceof Node) {
+            parent.appendChild(child); // Only append valid DOM nodes
+        } else {
+            console.warn('Unsupported child type ignored:', child);
         }
-
-        // Only append valid DOM nodes
-        if (child instanceof Node) parent.appendChild(child);
-
-        // Note: Silently skips non-renderable types (boolean, symbol, function, etc.) 
     }
 
     /**

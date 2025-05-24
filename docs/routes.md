@@ -4,10 +4,10 @@
 
 | Methods                           | Description                              |
 |-----------------------------------|------------------------------------------|
-| `Instance.addRoute(path, action)` | Register the route and its handler.      |
-| `Instance.navigate(path)`         | Navigates to a specified route.          |
-| `Instance.renderRoute(path)`      | Maps a path to an action.                |
-| `Instance.renderInitialRoute()`   | Handles browser back/forward navigation. |
+| `instance.addRoute(path, action)` | Register the route and its handler.      |
+| `instance.navigate(path)`         | Navigates to a specified route.          |
+| `instance.renderRoute(path)`      | Maps a path to an action.                |
+| `instance.renderInitialRoute()`   | Handles browser back/forward navigation. |
 
 ## Example Usage
 
