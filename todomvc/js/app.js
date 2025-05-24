@@ -1,5 +1,5 @@
-import Event from "../shedjs/events.js";
-import Dom from "../shedjs/dom.js";
+import Event from "/shedjs/events.js";
+import Dom from "/shedjs/dom.js";
 
 const todoInput = document.getElementById('todo-input');
 const todoListEl = document.querySelector('.todo-list');

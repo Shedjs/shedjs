@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="brand.png" alt="Shed.js_logo" width="300"/>
+  <img src="todomvc/assets/brand.png" alt="Shed.js_logo" width="300"/>
 </p>
 
 <p align="center">
@@ -22,9 +22,9 @@ This JavaScript mini-framework was developed by <a href="https://github.com/sadi
 
 ## Initialization
 
-To get started with the framework, you must first include the core module located at [framework/module.js](/shedjs/module.js) in your project. This file contains the main logic that powers the framework’s functionality. Once imported, you can create and configure your framework instance by providing it with two essential components:
+To get started with the framework, you must first include the core module located at [framework/module.js](/shedjs/module.js) in your project. This file contains the main logic that powers the framework's functionality. Once imported, you can create and configure your framework instance by providing it with two essential components:
 
-- **Initial Application State:** Defines the starting point of your app’s dynamic data, which the framework will manage and react to.
+- **Initial Application State:** Defines the starting point of your app's dynamic data, which the framework will manage and react to.
 
 - **Routing Configuration:** A mapping of URL paths to their respective components or views, enabling navigation and dynamic rendering within your single-page application.
 
@@ -41,8 +41,7 @@ We included a fully functional [TodoMVC](https://todomvc.com/) app built with Sh
 Run the app (Node.js server):
 
 ```shell
-cd todomvc/
-node server.js
+make todo
 ```
 
 Visit http://localhost:3000
@@ -53,7 +52,6 @@ Visit http://localhost:3000
 
 - Check the [spec compliance checklist](https://github.com/tastejs/todomvc/blob/master/app-spec.md)
 
-BTW, for this implementation, we simply used the todomvc CDN (see [index.html](/todomvc/index.html)), so no need for any locally installed files.
 ## License
 
 Open-sourced under [The MIT License](https://opensource.org/license/mit).  
