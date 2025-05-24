@@ -13,8 +13,6 @@ This documentation specifically supports the two main functions: `onEvent` and `
 |-----------------------------------------------|-----------------------------------------------------------------------------------------|
 | `instance.onEvent(event, selector, callback)` | Registers an event handler to elements matching the CSS selector, returns handler ID.   |
 | `instance.removeEvent(handlerId)`             | Removes an event handler by its ID, returns true if successful.                         |
-| `instance.applyEventHandler(handler)`         | Attaches the event handler to matching elements (or window/document).                   |
-| `instance.initEventSystem()`                  | Initializes event handling for existing and future DOM elements using MutationObserver. |
 
 ## API
 
@@ -33,7 +31,7 @@ Adds an event handler to an element corresponding to the CSS or window or docume
 ### Behavior:
 * if the event is not supported by Shed, a warning message is displayed and the function returns -1
 
-`Event.removeEvent(id)`       
+`instance.removeEvent(id)`       
 Removes an event handler using its ID
 ### Parameters:
 * `handleID`: ID of handler to be removed (id returned by onEvent)

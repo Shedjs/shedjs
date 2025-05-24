@@ -1,11 +1,12 @@
-import Event from "/shedjs/events.js";
 import Dom from "/shedjs/dom.js";
+import Event from "/shedjs/events.js";
 
 const todoInput = document.getElementById('todo-input');
 const todoListEl = document.querySelector('.todo-list');
 
 let todos = [];
 let currentFilter = 'all';
+let shedEvent = new Event();
 
 function loadTodos() {
     const storedTodos = localStorage.getItem('todos');
@@ -48,11 +49,8 @@ function renderTodos(filter = 'all') {
         Dom.appendChild(todoListEl, div);
     }
 
-
     // this condition for delete the footer when no tasks yet
-    if (filter === 'all' && filteredTodos.length === 0) {
-        return
-    }
+    if (filter === 'all' && filteredTodos.length === 0) return
 
     // this condition for display a message when no tasks active 
     if (filter === 'active' && filteredTodos.length === 0) {
@@ -181,9 +179,6 @@ function handleInitialFilter() {
 
     renderTodos(filter);
 }
-
-let shedEvent = new Event()
-shedEvent.initEventSystem();
 
 // add event Shedjs
 shedEvent.onEvent('keypress', '#todo-input', addTodo);

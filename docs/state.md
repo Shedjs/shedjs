@@ -22,17 +22,6 @@
     - Implements observer pattern with Set for efficient lookups
     - Returns cleanup function for memory leak prevention
 
-> ⚠️ **WARNING**: Do not access or modify any property or method starting with `_` directly.  
-These are internal and may change or break in future versions. Use the provided public methods instead.
-
-1. `_state`
-    - Internal state with _ prefix (common convention for "private" members)
-    - Always merged immutably to prevent side effects
-
-2. `_hydrate()`
-    - Private method that loads persisted state on initialization
-    - Merges localStorage data with initial state (giving priority to saved state)
-
 ## Usage Example
 
 ```js

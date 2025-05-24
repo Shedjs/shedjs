@@ -14,13 +14,9 @@
 }
 
 .toggle-all {
-    height: 1px;
-    right: 100%;
-    width: 1px;
-    border: none;
-    bottom: 100%;
-    opacity: 0;
-    position: absolute
+    height: 60px !important;
+    right: auto !important;
+    width: 40px !important
 }
 
 .toggle-all-label {
@@ -138,6 +134,16 @@ body {
     z-index: 2
 }
 
+.toggle-all {
+    border: none;
+    bottom: 100%;
+    height: 1px;
+    opacity: 0;
+    position: absolute;
+    right: 100%;
+    width: 1px
+}
+
 .toggle-all+label {
     align-items: center;
     display: flex;
@@ -157,27 +163,7 @@ body {
     font-size: 22px;
     padding: 10px 27px;
     -webkit-transform: rotate(90deg);
-    transform: rotate(90deg);
-    cursor: pointer
-}
-
-
-.toggle-all+label:hover:after {
-    content: "Mark all";
-    position: absolute;
-    top: -30px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 17px;
-    white-space: nowrap;
-    background: #f5f5f5;
-    padding: 2px 5px;
-    border-radius: 3px;
-    color: #737373
-}
-
-.toggle-all+label:hover {
-    color: #737373
+    transform: rotate(90deg)
 }
 
 .toggle-all:checked+label:before {
@@ -221,7 +207,7 @@ body {
     appearance: none;
     border: none;
     bottom: 0;
-    height: 40px;
+    height: auto;
     margin: auto 0;
     opacity: 0;
     position: absolute;
@@ -259,7 +245,7 @@ body {
     bottom: 0;
     color: #949494;
     display: none;
-    font-size: 16px;
+    font-size: 30px;
     height: 40px;
     margin: auto 0;
     position: absolute;
@@ -275,7 +261,7 @@ body {
 }
 
 .todo-list li .destroy:after {
-    content: "🗑️";
+    content: "×";
     display: block;
     height: 100%;
     line-height: 1.1
@@ -314,7 +300,8 @@ body {
 
 .todo-count {
     float: left;
-    text-align: left
+    text-align: left;
+    font-size: 15px;
 }
 
 .todo-count strong {
@@ -327,7 +314,7 @@ body {
     color: #777;
     font-style: italic;
     border-top: 1px solid #ededed;
-    margin-top: 10px
+    margin-top: 10px;
 }
 
 .filters {
@@ -336,8 +323,7 @@ body {
     margin: 0;
     padding: 0;
     position: absolute;
-    right: 0;
-    bottom: 10px
+    right: 0
 }
 
 .filters li {
@@ -350,7 +336,8 @@ body {
     color: inherit;
     margin: 3px;
     padding: 3px 7px;
-    text-decoration: none
+    text-decoration: none;
+    font-size: 15px;
 }
 
 .filters li a:hover {
@@ -367,7 +354,8 @@ html .clear-completed:active {
     float: right;
     line-height: 19px;
     position: relative;
-    text-decoration: none
+    text-decoration: none;
+    font-size: 15px;
 }
 
 .clear-completed:hover {
@@ -403,6 +391,9 @@ html .clear-completed:active {
         background: none
     }
 
+    .todo-list li .toggle {
+        height: 40px
+    }
 }
 
 @media (max-width:430px) {
@@ -410,6 +401,9 @@ html .clear-completed:active {
         height: 50px
     }
 
+    .filters {
+        bottom: 10px
+    }
 }
 
 .toggle-all:focus+label,
@@ -542,7 +536,7 @@ hr {
 .learn-bar>.learn {
     background-color: hsla(0, 0%, 100%, .6);
     border-radius: 5px;
-    left: 8px;
+    left: -300px;
     padding: 10px;
     position: absolute;
     top: 8px;
@@ -551,25 +545,15 @@ hr {
     width: 272px
 }
 
-@media (max-width: 560px) {
-    body {
-        padding: 0 0.5rem;
-    }
-
-    .todoapp h1 {
-        font-size: 70px;
-        font-weight: 150;
-    }
-
-    .new-todo {
-        font-size: 18px;
-    }
-
-}
-
 @media (min-width:899px) {
     .learn-bar {
         padding-left: 300px;
         width: auto
     }
+
+    .learn-bar>.learn {
+        left: 8px
+    }
 }
+
+/*# sourceMappingURL=app.css.map*/

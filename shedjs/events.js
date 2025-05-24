@@ -1,64 +1,77 @@
-import {FrameworkError} from "./errors.js"
+import { FrameworkError } from "./errors.js"
 
 class Event {
     constructor() {
         /**
-         * Registered event handlers.
-         * @type {Array<{id: number, event: string, selector: string, callback: Function}>}
-         * @example 
-         * { id: 0, event: 'click', selector: '.btn', callback: handleClick }
+         * Internal registry of all event handlers.
+         * Structure: {id, event, selector, callback, _winListener?}
+         * @private
          */
-        this.handlers = [];
+        this._handlers = [];
 
         /**
-         * Tracks which elements already have event listeners.
-         * Prevents duplicate bindings for the same event on the same element.
-         * @type {Map<string, Set<string>>}
-         * @example
-         * 'DIV-btn-submit-btn' → Set(['click', 'mouseover'])
+         * Tracks elements that already have event listeners
+         * Prevents duplicate event binding on the same elements.
+         * Format: Map<ElementIdentifier, Set<EventType>>
+         * @private
          */
-        this.processedItems = new Map();
+        this._processedItems = new Map();
 
         /**
-         * Supported DOM events (bound to individual elements).
-         * @type {string[]}
+         * Standard DOM events bound to individual elements
+         * @private
          */
-        this.domEvents = [
+        this._domEvents = [
             'click', 'dblclick', 'input', 'keydown', 'scroll',
             'mouseover', 'mouseout', 'change', 'submit',
             'keypress', 'keyup', 'blur', 'focus'
         ];
 
         /**
-         * Supported window/document events (global scope).
-         * @type {string[]}
+         * Global events bound to window/document
+         * @private
          */
-        this.winOrDocEvents = [
+        this._winOrDocEvents = [
             'resize', 'load', 'unload', 'beforeunload',
             'hashchange', 'popstate', 'DOMContentLoaded'
         ];
 
         /**
-         * All allowed event types (DOM + window/document).
-         * @type {string[]}
+         * Combined list of all supported event types
+         * @private
          */
-        this.supportedEvents = [...this.domEvents, ...this.winOrDocEvents];
+        this._supportedEvents = [...this._domEvents, ...this._winOrDocEvents];
+
+        /**
+         * Flag to prevent duplicate initialization
+         * @private
+         */
+        this._initialized = false;
+
+        /**
+         * Initializes the event system
+         * @private
+         */
+        this._initEventSystem();
+
+        // Note: developers shouldn't access these variables directly, they are internal.
     }
 
     /**
-     * Ajoute un gestionnaire d'événement avec un sélecteur CSS
-     * @param {string} event - Type d'événement a écouter (ex: 'click', 'input', etc.)
-     * @param {string} selector - Sélecteur CSS pour cibler les éléments
-     * @param {Function} callback - Fonction à exécuter lors de l'événement
-     * @returns {number} ID du gestionnaire pour pouvoir le supprimer plus tard
+     * Registers a new event handler
+     * @param {string} event - Event type (e.g., 'click', 'keyup')
+     * @param {string} selector - CSS selector or 'window'/'document' for global events
+     * @param {Function} callback - Handler function
+     * @returns {number} Handler ID for removal
+     * @throws {FrameworkError} On invalid event type or callback
      */
     onEvent(event, selector, callback) {
-        if (!this.supportedEvents.includes(event)) {
+        if (!this._supportedEvents.includes(event)) {
             throw new FrameworkError(
                 'EVENT',
                 'UNSUPPORTED_EVENT',
                 `Event "${event}" is not supported`,
-                { supportedEvents: this.supportedEvents }
+                { supportedEvents: this._supportedEvents }
             );
         }
 
@@ -71,40 +84,41 @@ class Event {
             );
         }
 
-        const id = this.handlers.length;
-
-        this.handlers.push({ id, event, selector, callback });
-        this.applyEventHandler(this.handlers[this.handlers.length - 1]);
-
-        console.log(`Gestionnaire d'événement ajouté avec ID: ${id} => ${event} sur ${selector}`);
+        const id = this._handlers.length;
+        this._handlers.push({ id, event, selector, callback });
+        this._applyEventHandler(this._handlers[this._handlers.length - 1]);
 
         return id;
     }
 
     /**
-     * Supprime un gestionnaire d'événement par son ID
-     * @param {number} handlerId - ID du gestionnaire à supprimer
-     * @returns {boolean} true si le gestionnaire a été trouvé et supprimé
+     * Removes an event handler by ID
+     * @param {number} handlerId - The ID returned by onEvent()
+     * @returns {boolean} True if handler was found and removed
      */
     removeEvent(handlerId) {
-        // console.log(`Suppression du gestionnaire d'événement avec ID: ${handlerId}`);
-        const index = this.handlers.findIndex(h => h.id === handlerId);
-        if (index !== -1) {
-            this.handlers.splice(index, 1);
-            return true;
-        }
-        console.log(`Aucun gestionnaire with this ID: ${handlerId}`);
+        const index = this._handlers.findIndex(h => h.id === handlerId);
+        if (index === -1) return false;
 
-        return false;
+        const handler = this._handlers[index];
+
+        // Special cleanup for window/document events
+        if (handler._winListener) {
+            window.removeEventListener(handler.event, handler._winListener);
+        }
+
+        this._handlers.splice(index, 1);
+        return true;
     }
 
     /**
-     * Applique un gestionnaire d'événement aux éléments correspondants
-     * @param {Object} handler - Gestionnaire d'événement à appliquer
+     * Applies an event handler to matching elements
+     * @private
+     * @param {object} handler - The handler object from _handlers
      */
-    applyEventHandler(handler) {
+    _applyEventHandler(handler) {
         const { event, selector, callback, id } = handler;
-        if (this.winOrDocEvents.includes(event) && (selector === 'window' || selector === 'document')) {
+        if (this._winOrDocEvents.includes(event) && (selector === 'window' || selector === 'document')) {
             const winListener = (e) => callback(e, window);
             handler._winListener = winListener;
             // window.addEventListener(event, winListener);
@@ -117,19 +131,16 @@ class Event {
 
             elements.forEach(el => {
                 const elementKey = `${el.tagName}-${Array.from(el.classList).join('-')}-${el.id || Math.random()}`;
-                console.log(`Key de l'élément: ${elementKey} pour l'événement: ${event}`);
-
-                if (!this.processedItems.has(elementKey)) {
-                    this.processedItems.set(elementKey, new Set());
+                if (!this._processedItems.has(elementKey)) {
+                    this._processedItems.set(elementKey, new Set());
                 }
 
-                const elementEvents = this.processedItems.get(elementKey);
-
+                const elementEvents = this._processedItems.get(elementKey);
                 if (!elementEvents.has(event)) {
                     elementEvents.add(event);
                     // el.addEventListener(event, (e) => {
                     el[`on${event}`] = (e) => { // ⚠️ Inline assignment
-                        this.handlers.forEach(h => {
+                        this._handlers.forEach(h => {
                             if (h.event === event && el.matches(h.selector)) {
                                 h.callback(e, el);
                             }
@@ -142,18 +153,18 @@ class Event {
         }
     }
 
-
     /**
-     * Initialisation: traite les éléments existants et configure un observateur
-     * pour les nouveaux éléments ajoutés au DOM
+     * Processes existing elements and sets up an
+     * observer for new elements added to the DOM
+     * @private
      */
-    initEventSystem() {
+    _initEventSystem() {
         if (this._initialized) {
             console.warn('[Framework] Event system already initialized');
             return;
         }
 
-        this.handlers.forEach(handler => this.applyEventHandler(handler));
+        this._handlers.forEach(handler => this._applyEventHandler(handler));
         const observer = new MutationObserver((mutations) => {
             let reapplyAgain = false;
 
@@ -163,9 +174,9 @@ class Event {
                 }
             });
             if (reapplyAgain) {
-                this.handlers.forEach(handler => {
-                    if (!this.winOrDocEvents.includes(handler.event) && handler.selector !== 'window' && handler.selector !== 'document') {
-                        this.applyEventHandler(handler);
+                this._handlers.forEach(handler => {
+                    if (!this._winOrDocEvents.includes(handler.event) && handler.selector !== 'window' && handler.selector !== 'document') {
+                        this._applyEventHandler(handler);
                     }
                 });
             }
@@ -186,7 +197,7 @@ class Event {
                 });
             };
         }
-        console.log('Système event initialisé');
+        console.log('Event system initialized');
     }
 }
 

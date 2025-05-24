@@ -7,6 +7,7 @@ class Route {
          */
         this.routes = {};
     }
+
     /**
     * Registers a route path with its corresponding action handler.
     * @param {string} path - Route path (should start with '/')

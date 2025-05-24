@@ -4,20 +4,25 @@ class State {
    * @param {Object} [initialState={}] - Initial state object (will be merged with persisted state)
   */
   constructor(initialState = {}) {
-    // Internal state (prefix _ denotes private convention)
+    /**
+     * @private Internal state (prefix _ denotes private convention)
+    */
     this._state = initialState;
-
-    // Set of listener functions to notify on state changes
+    /**
+     * @private Set of listener functions to notify on state changes
+     */
     this._listeners = new Set();
 
-    // Automatically load any persisted state from localStorage
+    /**
+     * @private Automatically load any persisted state from localStorage
+     */
     this._hydrate();
 
     // Note: developers shouldn't access these variables directly, they are internal.
   }
 
   /**
-   * Private: Hydrates state from localStorage.
+   * @Private Hydrates state from localStorage.
    * Merges any saved state with initial state.
    */
   _hydrate() {
