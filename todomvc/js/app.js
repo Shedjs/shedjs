@@ -6,7 +6,7 @@ const todoListEl = document.querySelector('.todo-list');
 
 let todos = [];
 let currentFilter = 'all';
-let shedEvent = new Event();
+let shedEvent = new Event()
 
 function loadTodos() {
     const storedTodos = localStorage.getItem('todos');
@@ -49,8 +49,11 @@ function renderTodos(filter = 'all') {
         Dom.appendChild(todoListEl, div);
     }
 
+
     // this condition for delete the footer when no tasks yet
-    if (filter === 'all' && filteredTodos.length === 0) return
+    if (filter === 'all' && filteredTodos.length === 0) {
+        return
+    }
 
     // this condition for display a message when no tasks active 
     if (filter === 'active' && filteredTodos.length === 0) {
@@ -147,11 +150,15 @@ function toggleTodo(id) {
 }
 
 function startEditing(id, liElement) {
+    console.log("IDDDD:", id);
     liElement.classList.add('editing');
     const editInput = liElement.querySelector('.edit');
+    //console.log("LIELEMENT:", editInput);
     editInput.focus();
     editInput.setSelectionRange(editInput.value.length, editInput.value.length);
 }
+
+
 
 function finishEditing(id, liElement, newText) {
     const text = newText.trim();
@@ -179,6 +186,8 @@ function handleInitialFilter() {
 
     renderTodos(filter);
 }
+
+
 
 // add event Shedjs
 shedEvent.onEvent('keypress', '#todo-input', addTodo);
@@ -233,13 +242,15 @@ shedEvent.onEvent('dblclick', '.todo-list', event => {
     }
 });
 
-shedEvent.onEvent('blur', '.todo-list', event => {
-    const target = event.target;
-    if (target.classList.contains('edit')) {
-        const li = target.closest('li');
-        if (!li) return;
-        const todoId = Number(li.dataset.id);
-        finishEditing(todoId, li, target.value);
+shedEvent.onEvent('blur', '.edit', (e) => {
+    console.log('Bluriiiing');
+    const target = e.target;
+    const editInput = target.closest('.edit');
+    const li = editInput.closest('li');
+    if (!li || !editInput) return;
+    if (li && li.classList.contains('editing')) {
+        li.classList.remove('editing');
+        renderTodos(currentFilter);
     }
 });
 
@@ -259,11 +270,8 @@ shedEvent.onEvent('keyup', '.todo-list', event => {
     }
 });
 
-loadTodos();
-handleInitialFilter();
-
 // Handle hash changes
-shedEvent.onEvent('hashchange', window, () => {
+shedEvent.onEvent('hashchange', 'window', () => {
     handleInitialFilter();
 });
 
@@ -272,3 +280,6 @@ shedEvent.onEvent('click', '.clear-completed', () => {
     saveTodos();
     renderTodos(currentFilter);
 });
+
+loadTodos();
+handleInitialFilter();
