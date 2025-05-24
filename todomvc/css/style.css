@@ -454,11 +454,12 @@ hr {
 }
 
 .learn ul {
-    margin: 0 0 30px 25px;
+    margin-bottom: 3px;
     padding: 0
 }
 
 .learn li {
+    margin-left: 20px;
     line-height: 20px
 }
 
@@ -476,7 +477,7 @@ hr {
 
 .quote {
     border: none;
-    margin: 20px 0 60px
+    margin: 20px 0 40px
 }
 
 .quote p {
@@ -500,12 +501,6 @@ hr {
     bottom: -42px;
     content: "”";
     right: 3px
-}
-
-.quote footer {
-    bottom: -40px;
-    position: absolute;
-    right: 0
 }
 
 .quote footer img {
@@ -545,6 +540,22 @@ hr {
     width: 272px
 }
 
+@media (max-width: 560px) {
+    body {
+        padding: 0 0.5rem;
+    }
+
+    .todoapp h1 {
+        font-size: 70px;
+        font-weight: 150;
+    }
+
+    .new-todo {
+        font-size: 18px;
+    }
+
+}
+
 @media (min-width:899px) {
     .learn-bar {
         padding-left: 300px;
@@ -555,5 +566,3 @@ hr {
         left: 8px
     }
 }
-
-/*# sourceMappingURL=app.css.map*/
