@@ -1,23 +1,118 @@
 <h1 align="center">Shed.js Strenghts</h1>
 
-## DOM Class
+## DOM Manipulation
 
-- **Well-structured API**: Your methods follow clear patterns and have good documentation.
+1. **Unified Element Creation**  
+   * Creates DOM elements with attributes, properties, and children in one call (`createElement`).
 
-- **Type safety**: You properly validate inputs and handle edge cases.
+2. **Smart Attribute Handling**  
+   * Single method handles HTML attributes, DOM properties, and event listeners (`setAttribute`).
 
-- **Flexible child handling**: The appendChild method gracefully handles various input types.
+3. **Flexible Child Management**  
+   * Accepts strings, numbers, arrays, or DOM nodes as children (`appendChild`).
 
-- **VDOM support**: The createFromVNode method provides a nice bridge to virtual DOM concepts.
+4. **Virtual DOM Conversion**  
+   * Transforms VDOM structures to real DOM nodes recursively (`createFromVNode`).
 
-- **Chainable API**: The renderChainable method offers a fluent interface.
+5. **Optimized Rendering**  
+   * Safely replaces container content while validating inputs (`render`).
 
-## Event Class
+6. **Fluent API Support**  
+   * Enables method chaining for declarative DOM manipulation (`renderChainable`).
 
-- **Comprehensive event support**: You cover both DOM and window/document events.
+7. **Automatic Type Conversion**  
+   * Converts primitives to text nodes and merges style objects automatically.
 
-- **Duplicate prevention**: The processedItems Map prevents duplicate event bindings.
+8. **Lightweight Core**  
+   * Pure JavaScript implementation with zero dependencies.
 
-- **Dynamic element handling**: The MutationObserver handles newly added elements.
+9. **Error Resilient**  
+   * Skips invalid values and provides clear error messages for DOM operations.
 
-- **Clean removal**: The removeEvent method allows cleaning up handlers.
+## Event Handling
+
+1. **Unified Event Handling**  
+   * Single method (`onEvent`) handles all DOM and window/document events with validation.
+
+2. **Selector Support**  
+   * Binds events using CSS selectors for flexible element targeting.
+
+3. **Duplicate Prevention**  
+   * Tracks processed elements to avoid duplicate event bindings.
+
+4. **Global Event Support**  
+   * Handles window/document events (`resize`, `hashchange`) differently from DOM events.
+
+5. **Dynamic DOM Handling**  
+   * Uses MutationObserver to automatically bind events to newly added elements.
+
+6. **Clean Removal**  
+   * Allows precise event removal by handler ID (`removeEvent`).
+
+7. **Error Resilience**  
+   * Validates event types and callbacks with framework-specific errors.
+
+8. **Performance Optimized**  
+   * Uses direct property assignment (`onclick`) instead of `addEventListener`.
+
+9. **Automatic Initialization**  
+   * Self-configuring system that handles existing and future DOM elements.
+
+10. **Framework Integration**  
+   * Designed to work seamlessly with your DOM class and error system.
+
+## Routing System
+
+1. **Simplicity**
+
+   * Very lightweight and easy to understand; suitable for small SPAs or learning purposes.
+
+2. **Zero Dependencies**
+
+   * Pure JavaScript, no need for external libraries or frameworks.
+
+3. **Hash-based Navigation Support**
+
+   * Uses `window.location.hash`, which works without server configuration and avoids page reloads.
+
+4. **Back/Forward Button Handling**
+
+   * Implements `onhashchange` to handle browser history navigation correctly.
+
+5. **Dynamic Route Rendering**
+
+   * Calls route-specific logic (`action()` callbacks) dynamically, enabling modular views.
+
+6. **Custom Initial Route Support**
+
+   * Initializes based on the current URL hash, providing direct-link support (e.g. `#/about` loads About page on refresh).
+
+## State Management
+
+1. **Centralized & Reactive**
+
+   * Offers a single source of truth with a subscription mechanism (`subscribe`), enabling reactive UI updates.
+
+2. **Persistent State**
+
+   * Automatically persists data to `localStorage` and restores it on page load via `_hydrate()`. Great for session continuity.
+
+3. **Shallow Merge Updates**
+
+   * Allows partial state updates using `setState({ ... })`, reducing boilerplate for common cases.
+
+4. **Immutable State Access**
+
+   * `getState()` returns a shallow copy, preventing unintended mutations from outside consumers.
+
+5. **Clean Subscription Lifecycle**
+
+   * Subscriptions return an `unsubscribe()` function for cleanup, preventing memory leaks.
+
+6. **No Dependencies**
+
+   * Pure JavaScript with no reliance on third-party libraries — portable, testable, and framework-agnostic.
+
+7. **Minimal API**
+
+   * Simple and effective interface: `setState`, `getState`, `subscribe`.
