@@ -17,7 +17,7 @@ This documentation specifically supports the two main functions: `onEvent` and `
 
 ## API
 
-1. **`instance.onEvent(evenType, selector, callback)`**
+### 1. `instance.onEvent(evenType, selector, callback)`
 
 Adds an event handler to an element corresponding to the CSS or window or document selector.
 
@@ -36,7 +36,7 @@ Adds an event handler to an element corresponding to the CSS or window or docume
 
 ----
 
-2. **`instance.removeEvent(id)`**
+### 2. `instance.removeEvent(id)`
 
 Removes an event handler using its ID
 
@@ -53,7 +53,7 @@ Removes an event handler using its ID
 
 ----
 
-3. **`instance.destroy()`**
+### 3. `instance.destroy()`
 
 Completely shut down an ENTIRE event system.  
 Browser automatically cleans up when page closes,  
@@ -79,7 +79,7 @@ instance.destroy()
 └── cleans up observers & arrays
 ```
 
-### Examples: `onEvent()` `removeEvent()`
+## Examples: `onEvent()` `removeEvent()`
 
 1. **Add a handler for a click on a button with Shed**
 
@@ -118,7 +118,7 @@ const handlerId = Event.onEvent('resize', 'window', () => {
 })
 ```
 
-### Examples: `destroy()`
+## Examples: `destroy()`
 
 1. **Single Page Applications (SPAs)**
 

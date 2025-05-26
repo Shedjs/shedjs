@@ -190,7 +190,7 @@ function finishEditing(id, liElement, newText) {
 // Setup event handlers
 shedEvent.onEvent('keypress', '#todo-input', addTodo);
 
-// Updated filter click handler to use router.navigate
+// Filter click handler
 shedEvent.onEvent('click', '.filters a', (e) => {
     e.preventDefault();
     const target = e.target;
@@ -273,7 +273,7 @@ appState.subscribe(renderTodos);
 // Initialize the application
 function initApp() {
     setupRoutes();
-    router.renderInitialRoute();
+    router.init();
     renderTodos();
 }
 

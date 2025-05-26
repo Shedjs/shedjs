@@ -4,8 +4,9 @@ class Route {
          * Registry of route paths and their associated action handlers.
          * @type {Object.<string, Function>}
          * @example { '/about': showAboutPage }
+         * @private
          */
-        this.routes = {};
+        this._routes = {};
     }
 
     /**
@@ -14,7 +15,7 @@ class Route {
     * @param {Function} action - Callback to execute when route is activated
     */
     addRoute(path, action) {
-        this.routes[path] = action // Register the route and its handler
+        this._routes[path] = action; // Register the route and its handler
     }
 
     /**
@@ -24,39 +25,40 @@ class Route {
      */
     navigate(path) {
         window.location.hash = path; // Change the URL hash
-        this.renderRoute(path); // Load the corresponding route
+        this._renderRoute(path); // Load the corresponding route
+    }
+
+    /**
+     * Initializes the router and sets up hash change listeners.
+     * - Renders current route on startup (defaults to '/' if no hash is present)
+     * - Listens for back/forward navigation via hash changes
+     */
+    init(path = '/') {
+        // Use window.location.hash to determine the initial path, default to '/'
+        path = window.location.hash.slice(1) || path;
+        console.log(path);
+
+        this._renderRoute(path);
+        // Listen for changes in the hash (back/forward navigation)
+        // window.addEventListener("hashchange", () => {
+        window.onhashchange = () => { // ⚠️ Inline assignment
+            this._renderRoute(window.location.hash.slice(1));
+        };
     }
 
     /**
      * Executes the handler for a given route path.
      * @param {string} path - Route path to render
      * @throws {Error} When attempting to render an unregistered route
+     * @private
      */
-    renderRoute(path) {
-        const route = this.routes[path];
+    _renderRoute(path) {
+        const route = this._routes[path];
         if (route) {
             route(); // Execute the associated action for the route
         } else {
             console.error(`Route not found: ${path}`);
         }
-    }
-
-    /**
-     * Initializes the router and sets up hash change listeners.
-     * - Renders current route on startup
-     * - Listens for back/forward navigation via hash changes
-     */
-    renderInitialRoute(path) {
-        // Use window.location.hash to determine the initial path, default to '/'
-        path = window.location.hash.slice(1) || '/';
-        console.log(path);
-
-        this.renderRoute(path)
-        // Listen for changes in the hash (back/forward navigation)
-        // window.addEventListener("hashchange", () => {
-        window.onhashchange = () => { // ⚠️ Inline assignment
-            this.renderRoute(window.location.hash.slice(1))
-        };
     }
 }
 
