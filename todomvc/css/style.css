@@ -24,7 +24,6 @@
 }
 
 .toggle-all+label:hover:after {
-    content: "Mark all";
     position: absolute;
     top: -30px;
     left: 50%;
@@ -365,10 +364,11 @@ html .clear-completed:active {
     position: relative;
     text-decoration: none;
     font-size: 15px;
+   
 }
 
 .clear-completed:hover {
-    text-decoration: underline
+    text-decoration: underline;
 }
 
 .info {

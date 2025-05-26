@@ -15,7 +15,7 @@ const appState = new State({
     currentFilter: 'all'
 });
 
-console.log("AppState:", appState);
+// console.log("AppState:", appState);
 
 function escapeHTML(str) {
     const p = Dom.createElement('p');
@@ -44,7 +44,7 @@ function renderTodos() {
             <input class="toggle-all" type="checkbox" data-testid="toggle-all"
                    ${todos.every(t => t.completed) ? 'checked' : ''} 
                    id="toggle-all" data-testid="toggle-all">
-            <label for="toggle-all">Mark all as complete</label>
+            <label for="toggle-all"></label>
         `;
         Dom.appendChild(todoListEl, div);
     }
@@ -106,7 +106,7 @@ function renderTodos() {
                 <a class="${currentFilter === 'completed' ? 'selected' : ''}" href="#/completed">Completed</a>
             </li>
         </ul>
-        <button class="clear-completed" ${todos.some(t => t.completed) ? '' : 'disabled'}>
+        <button class="clear-completed" ${todos.some(t => t.completed) ? '' : 'style="display: none"'}>
             Clear completed
         </button>
     `;
@@ -231,7 +231,6 @@ shedEvent.onEvent('dblclick', '.todo-list', (e) => {
         startEditing(todoId, li);
     }
 });
-
 shedEvent.onEvent('blur', '.edit', (e) => {
     console.log('Bluriing');
     const target = e.target;
@@ -244,7 +243,6 @@ shedEvent.onEvent('blur', '.edit', (e) => {
         renderTodos();
     }
 });
-
 shedEvent.onEvent('keyup', '.todo-list', e => {
     const target = e.target;
     if (target.classList.contains('edit')) {
@@ -260,7 +258,6 @@ shedEvent.onEvent('keyup', '.todo-list', e => {
         }
     }
 });
-
 shedEvent.onEvent('click', '.clear-completed', () => {
     const currentTodos = appState.getState().todos;
     const updatedTodos = currentTodos.filter(todo => !todo.completed);
@@ -279,3 +276,4 @@ function initApp() {
 
 // Start the application
 initApp();
+
