@@ -27,11 +27,12 @@ Adds an event handler to an element corresponding to the CSS or window or docume
   * `callback`: Function executed on event
 
 - **Return:**
-* `id`: Unique handler ID for later deletion  
-* `-1` if event not supported
+  * `id`: Unique handler ID for later deletion  
+  * `-1` if event not supported
 
 - **Behavior:**
-* if the event is not supported by Shed, a warning message is displayed and the function returns -1
+  * if the event is not supported by Shed, a warning message is displayed and the function returns 
+    -1
 
 ----
 
@@ -40,15 +41,15 @@ Adds an event handler to an element corresponding to the CSS or window or docume
 Removes an event handler using its ID
 
 - **Parameters:**
-* `handleID`: ID of handler to be removed (id returned by onEvent)
+  * `handleID`: ID of handler to be removed (id returned by onEvent)
 
 - **Return:**
-* `true` if the handler is found
-* `false` if the handler is not found by this ID
+  * `true` if the handler is found
+  * `false` if the handler is not found by this ID
 
 - **Behavior:**
-* if the ID cannot be found, a warning message is displayed
- and the function returns false.
+  * if the ID cannot be found, a warning message is displayed
+    and the function returns false.
 
 ----
 
