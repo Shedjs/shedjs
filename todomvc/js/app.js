@@ -1,12 +1,13 @@
 import Dom from "/shedjs/dom.js";
 import Event from "/shedjs/events.js";
-import Route from "/shedjs/routes.js"; // Not used yet!
+import Route from "/shedjs/routes.js";
 import State from "/shedjs/state.js";
 
 const todoInput = document.getElementById('todo-input');
 const todoListEl = document.querySelector('.todo-list');
 
-let shedEvent = new Event()
+let shedEvent = new Event();
+let router = new Route();
 
 let initialTodos = [];
 const appState = new State({
@@ -24,7 +25,6 @@ function escapeHTML(str) {
 
 function renderTodos() {
     const { todos, currentFilter } = appState.getState();
-    // console.log('Appstaating with getstate:', appState.getState());
     todoListEl.innerHTML = '';
 
     // Filter todos based on the selected filter
@@ -48,7 +48,6 @@ function renderTodos() {
         `;
         Dom.appendChild(todoListEl, div);
     }
-
 
     // this condition for delete the footer when no tasks yet
     // Show footer if there are any todos, even if all are completed/active
@@ -116,6 +115,26 @@ function renderTodos() {
     Dom.appendChild(todoListEl, footer);
 }
 
+// Route handlers for different filters
+function showAllTodos() {
+    appState.setState({ currentFilter: 'all' });
+}
+
+function showActiveTodos() {
+    appState.setState({ currentFilter: 'active' });
+}
+
+function showCompletedTodos() {
+    appState.setState({ currentFilter: 'completed' });
+}
+
+// Register routes with your Route framework
+function setupRoutes() {
+    router.addRoute('/', showAllTodos);
+    router.addRoute('/active', showActiveTodos);
+    router.addRoute('/completed', showCompletedTodos);
+}
+
 function addTodo(e) {
     if (e.key === 'Enter') {
         const text = todoInput.value.trim();
@@ -168,28 +187,16 @@ function finishEditing(id, liElement, newText) {
     }
 }
 
-// Handle initial filter from URL hash
-function handleInitialFilter() {
-    const hash = window.location.hash.substring(1);
-    let newFilter = 'all';
-
-    if (hash === '/active' || hash === 'active') newFilter = 'active';
-    else if (hash === '/completed' || hash === 'completed') newFilter = 'completed';
-    else if (hash === '/' || hash === '') newFilter = 'all';
-
-    if (appState.getState().currentFilter !== newFilter) {
-        appState.setState({ currentFilter: newFilter });
-    }
-}
-
-// add event Shedjs
+// Setup event handlers
 shedEvent.onEvent('keypress', '#todo-input', addTodo);
 
+// Updated filter click handler to use router.navigate
 shedEvent.onEvent('click', '.filters a', (e) => {
     e.preventDefault();
     const target = e.target;
     const href = target.getAttribute('href');
-    window.location.hash = href.substring(1);
+    const path = href.substring(1); // Remove the '#' from href
+    router.navigate(path);
 });
 
 shedEvent.onEvent('click', '.todo-list', (e) => {
@@ -254,18 +261,21 @@ shedEvent.onEvent('keyup', '.todo-list', e => {
     }
 });
 
-// Handle hash changes
-shedEvent.onEvent('hashchange', 'window', () => {
-    handleInitialFilter();
-});
-
 shedEvent.onEvent('click', '.clear-completed', () => {
     const currentTodos = appState.getState().todos;
     const updatedTodos = currentTodos.filter(todo => !todo.completed);
     appState.setState({ todos: updatedTodos });
 });
 
+// Subscribe to state changes to re-render todos
 appState.subscribe(renderTodos);
 
-handleInitialFilter();
-renderTodos();
+// Initialize the application
+function initApp() {
+    setupRoutes();
+    router.renderInitialRoute();
+    renderTodos();
+}
+
+// Start the application
+initApp();
