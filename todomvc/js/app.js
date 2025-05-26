@@ -1,29 +1,30 @@
 import Dom from "/shedjs/dom.js";
 import Event from "/shedjs/events.js";
+import Route from "/shedjs/routes.js"; // Not used yet!
 import State from "/shedjs/state.js";
 
 const todoInput = document.getElementById('todo-input');
 const todoListEl = document.querySelector('.todo-list');
+
 let shedEvent = new Event()
 
 let initialTodos = [];
-
 const appState = new State({
     todos: initialTodos,
     currentFilter: 'all'
 });
 
-console.log("Appstaating:", appState);
-
+console.log("AppState:", appState);
 
 function escapeHTML(str) {
     const p = Dom.createElement('p');
     Dom.appendChild(p, Dom.createTextNode(str));
     return p.innerHTML;
 }
+
 function renderTodos() {
     const { todos, currentFilter } = appState.getState();
-   // console.log('Appstaating with getstate:', appState.getState());
+    // console.log('Appstaating with getstate:', appState.getState());
     todoListEl.innerHTML = '';
 
     // Filter todos based on the selected filter
@@ -50,9 +51,8 @@ function renderTodos() {
 
 
     // this condition for delete the footer when no tasks yet
-    if (currentFilter === 'all' && filteredTodos.length === 0 && todos.length === 0) { // Show footer if there are any todos, even if all are completed/active
-        return
-    }
+    // Show footer if there are any todos, even if all are completed/active
+    if (currentFilter === 'all' && filteredTodos.length === 0 && todos.length === 0) return
 
     // this condition for display a message when no tasks active 
     if (currentFilter === 'active' && filteredTodos.length === 0 && todos.length > 0) {
@@ -189,7 +189,7 @@ shedEvent.onEvent('click', '.filters a', (e) => {
     e.preventDefault();
     const target = e.target;
     const href = target.getAttribute('href');
-    window.location.hash = href.substring(1); 
+    window.location.hash = href.substring(1);
 });
 
 shedEvent.onEvent('click', '.todo-list', (e) => {
@@ -222,7 +222,7 @@ shedEvent.onEvent('dblclick', '.todo-list', (e) => {
         if (!li) return;
         const todoId = Number(li.dataset.id);
         startEditing(todoId, li);
-    }   
+    }
 });
 
 shedEvent.onEvent('blur', '.edit', (e) => {
@@ -249,7 +249,7 @@ shedEvent.onEvent('keyup', '.todo-list', e => {
             finishEditing(todoId, li, target.value);
         } else if (e.key === 'Escape') {
             li.classList.remove('editing');
-            renderTodos(); 
+            renderTodos();
         }
     }
 });
@@ -268,4 +268,4 @@ shedEvent.onEvent('click', '.clear-completed', () => {
 appState.subscribe(renderTodos);
 
 handleInitialFilter();
-renderTodos(); 
+renderTodos();

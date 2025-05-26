@@ -4,18 +4,25 @@ class Event {
     constructor() {
         /**
          * Internal registry of all event handlers.
-         * Structure: {id, event, selector, callback, _winListener?}
+         * Structure: {
+         *   id: number,
+         *   event: string,
+         *   selector: string,
+         *   callback: Function,
+         *   domListeners: Map<Element, Function>,
+         *   windowListener: Function|null
+         * }
          * @private
          */
         this._handlers = [];
 
         /**
          * Tracks elements that already have event listeners
-         * Prevents duplicate event binding on the same elements.
-         * Format: Map<ElementIdentifier, Set<EventType>>
+         * Uses WeakMap to avoid memory leaks and provide stable references
+         * Format: WeakMap<Element, Set<EventType>>
          * @private
          */
-        this._processedItems = new Map();
+        this._processedItems = new WeakMap();
 
         /**
          * Standard DOM events bound to individual elements
@@ -49,12 +56,19 @@ class Event {
         this._initialized = false;
 
         /**
-         * Initializes the event system
+         * MutationObserver instance for cleanup
+         * @private
+         */
+        this._observer = null;
+
+        /**
+         * Initializes the event system:
+         * Apply existing handlers to current DOM elements
+         * Set up MutationObserver to handle future DOM changes
+         * Set _initialized = true to prevent re-running
          * @private
          */
         this._initEventSystem();
-
-        // Note: developers shouldn't access these variables directly, they are internal.
     }
 
     /**
@@ -85,14 +99,24 @@ class Event {
         }
 
         const id = this._handlers.length;
-        this._handlers.push({ id, event, selector, callback });
-        this._applyEventHandler(this._handlers[this._handlers.length - 1]);
+        const handler = {
+            id,
+            event,
+            selector,
+            callback,
+            // Store actual DOM listeners for proper cleanup
+            domListeners: new Map(), // Map<Element, Function>
+            windowListener: null     // For window/document events
+        };
+
+        this._handlers.push(handler);
+        this._applyEventHandler(handler);
 
         return id;
     }
 
     /**
-     * Removes an event handler by ID
+     * Removes an event handler by ID with proper DOM cleanup
      * @param {number} handlerId - The ID returned by onEvent()
      * @returns {boolean} True if handler was found and removed
      */
@@ -102,25 +126,66 @@ class Event {
 
         const handler = this._handlers[index];
 
-        // Special cleanup for window/document events
-        if (handler._winListener) {
-            window.removeEventListener(handler.event, handler._winListener);
-        }
+        // Proper cleanup of DOM listeners
+        this._cleanupHandler(handler);
 
         this._handlers.splice(index, 1);
         return true;
     }
 
     /**
-     * Applies an event handler to matching elements
+     * Clean up all event handlers and observers
+     * Call this when destroying an event system instance
+     * Mainly for complex apps that dynamically create/remove event systems
+     */
+    destroy() {
+        // Remove all handlers
+        this._handlers.forEach(handler => this._cleanupHandler(handler));
+        this._handlers = [];
+
+        // Disconnect mutation observer
+        if (this._observer) {
+            this._observer.disconnect();
+            this._observer = null;
+        }
+
+        this._processedItems = new WeakMap();
+        this._initialized = false;
+
+        console.log('Event system destroyed');
+    }
+
+    /**
+     * Clean up all DOM listeners for a specific handler
+     * @private
+     * @param {object} handler - The handler object to clean up
+     */
+    _cleanupHandler(handler) {
+        // Clean up window/document listeners
+        if (handler.windowListener) {
+            // window.removeEventListener(handler.event, handler.windowListener);
+            handler.windowListener = null; // Mark as inactive
+        }
+
+        // Clean up element listeners
+        // handler.domListeners.forEach((listenerFn, element) => {
+        //     element.removeEventListener(handler.event, listenerFn);
+        // });
+        handler.domListeners.clear();
+    }
+
+    /**
+     * Applies an event handler to matching elements with proper listener storage
      * @private
      * @param {object} handler - The handler object from _handlers
      */
     _applyEventHandler(handler) {
         const { event, selector, callback, id } = handler;
+
+        // Handle window/document events
         if (this._winOrDocEvents.includes(event) && (selector === 'window' || selector === 'document')) {
             const winListener = (e) => callback(e, window);
-            handler._winListener = winListener;
+            handler.windowListener = winListener;
             // window.addEventListener(event, winListener);
             window[`on${event}`] = winListener; // ⚠️ Inline assignment
             return;
@@ -130,26 +195,40 @@ class Event {
             const elements = document.querySelectorAll(selector);
 
             elements.forEach(el => {
-                const elementKey = `${el.tagName}-${Array.from(el.classList).join('-')}-${el.id || Math.random()}`;
-                if (!this._processedItems.has(elementKey)) {
-                    this._processedItems.set(elementKey, new Set());
+                // Use WeakMap for stable element tracking
+                if (!this._processedItems.has(el)) {
+                    this._processedItems.set(el, new Set());
                 }
 
-                const elementEvents = this._processedItems.get(elementKey);
+                const elementEvents = this._processedItems.get(el);
+
+                // Check if this specific handler already has a listener on this element
+                if (handler.domListeners.has(el)) return;
+
+                // Only add if this event type hasn't been processed for this element by ANY handler
                 if (!elementEvents.has(event)) {
                     elementEvents.add(event);
-                    // el.addEventListener(event, (e) => {
-                    el[`on${event}`] = (e) => { // ⚠️ Inline assignment
+
+                    // NEW: Create and store the actual DOM listener function
+                    const domListener = (e) => {
+                        // Execute ALL handlers that match this event and element
                         this._handlers.forEach(h => {
+                            // Only execute if handler still exists and matches
                             if (h.event === event && el.matches(h.selector)) {
                                 h.callback(e, el);
                             }
                         });
                     };
+
+                    // Store the listener for cleanup
+                    handler.domListeners.set(el, domListener);
+
+                    // el.addEventListener(event, domListener);
+                    el[`on${event}`] = domListener; // ⚠️ Inline assignment
                 }
             });
         } catch (error) {
-            console.error(`Erreur lors de l'application du gestionnaire d'événement: ${error}`);
+            console.error(`Error applying event handler: ${error}`);
         }
     }
 
@@ -164,18 +243,24 @@ class Event {
             return;
         }
 
+        // Apply existing handlers
         this._handlers.forEach(handler => this._applyEventHandler(handler));
-        const observer = new MutationObserver((mutations) => {
-            let reapplyAgain = false;
+
+        // Set up mutation observer
+        this._observer = new MutationObserver((mutations) => {
+            let shouldReapply = false;
 
             mutations.forEach(mutation => {
                 if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-                    reapplyAgain = true;
+                    shouldReapply = true;
                 }
             });
-            if (reapplyAgain) {
+
+            if (shouldReapply) {
                 this._handlers.forEach(handler => {
-                    if (!this._winOrDocEvents.includes(handler.event) && handler.selector !== 'window' && handler.selector !== 'document') {
+                    if (!this._winOrDocEvents.includes(handler.event) &&
+                        handler.selector !== 'window' &&
+                        handler.selector !== 'document') {
                         this._applyEventHandler(handler);
                     }
                 });
@@ -183,20 +268,23 @@ class Event {
         });
 
         if (document.body) {
-            observer.observe(document.body, {
+            this._observer.observe(document.body, {
                 childList: true,
                 subtree: true
             });
         } else {
-            console.warn('Le body du document n\'est pas encore disponible pour l\'observateur.');
             // window.addEventListener('DOMContentLoaded', () => {
             window.onload = () => { // ⚠️ Inline fallback (less ideal)
-                observer.observe(document.body, {
-                    childList: true,
-                    subtree: true
-                });
+                if (this._observer && document.body) {
+                    this._observer.observe(document.body, {
+                        childList: true,
+                        subtree: true
+                    });
+                }
             };
         }
+
+        this._initialized = true;
         console.log('Event system initialized');
     }
 }

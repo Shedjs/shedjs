@@ -8,6 +8,7 @@ class State {
      * @private Internal state (prefix _ denotes private convention)
     */
     this._state = initialState;
+
     /**
      * @private Set of listener functions to notify on state changes
      */
@@ -17,8 +18,6 @@ class State {
      * @private Automatically load any persisted state from localStorage
      */
     this._hydrate();
-
-    // Note: developers shouldn't access these variables directly, they are internal.
   }
 
   /**
@@ -27,7 +26,7 @@ class State {
    */
   _hydrate() {
     console.log("Hydrating state from localStorage...");
-    
+
     const saved = localStorage.getItem('state');
     if (saved) {
       // Parse and merge with initial state (saved state takes precedence)
@@ -45,7 +44,7 @@ class State {
     // Shallow merge new state (doesn't handle nested objects)
     this._state = { ...this._state, ...newState };
     console.log("Setting new state:", this._state);
-    
+
     // Persist entire state to localStorage
     localStorage.setItem('state', JSON.stringify(this._state));
 

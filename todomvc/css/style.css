@@ -23,6 +23,20 @@
     pointer-events: none
 }
 
+.toggle-all+label:hover:after {
+    content: "Mark all";
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 15px;
+    white-space: nowrap;
+    padding: 2px 5px;
+    border-radius: 3px;
+    color: #737373;
+    cursor: pointer;
+}
+
 body,
 button,
 html {
@@ -243,7 +257,7 @@ body {
 
 .todo-list li .destroy {
     bottom: 0;
-    color: #949494;
+    color: #c18585;
     display: none;
     font-size: 30px;
     height: 40px;
@@ -253,11 +267,6 @@ body {
     cursor: pointer;
     transition: color .2s ease-out;
     width: 40px
-}
-
-.todo-list li .destroy:focus,
-.todo-list li .destroy:hover {
-    color: #c18585
 }
 
 .todo-list li .destroy:after {
@@ -382,28 +391,6 @@ html .clear-completed:active {
 
 .info a:hover {
     text-decoration: underline
-}
-
-@media screen and (-webkit-min-device-pixel-ratio:0) {
-
-    .todo-list li .toggle,
-    .toggle-all {
-        background: none
-    }
-
-    .todo-list li .toggle {
-        height: 40px
-    }
-}
-
-@media (max-width:430px) {
-    .footer {
-        height: 50px
-    }
-
-    .filters {
-        bottom: 10px
-    }
 }
 
 .toggle-all:focus+label,
@@ -540,7 +527,20 @@ hr {
     width: 272px
 }
 
-@media (max-width: 560px) {
+/* Media Queries */
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+
+    .todo-list li .toggle,
+    .toggle-all {
+        background: none
+    }
+
+    .todo-list li .toggle {
+        height: 40px
+    }
+}
+
+@media (width < 560px) {
     body {
         padding: 0 0.5rem;
     }
@@ -554,9 +554,22 @@ hr {
         font-size: 18px;
     }
 
+    .toggle-all+label:hover:after {
+        font-size: 12px;
+    }
 }
 
-@media (min-width:899px) {
+@media (width < 430px) {
+    .footer {
+        height: 50px
+    }
+
+    .filters {
+        bottom: 10px
+    }
+}
+
+@media (width > 899px) {
     .learn-bar {
         padding-left: 300px;
         width: auto
