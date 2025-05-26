@@ -138,7 +138,7 @@ function setupRoutes() {
 function addTodo(e) {
     if (e.key === 'Enter') {
         const text = todoInput.value.trim();
-        if (text === '') return;
+        if (text === '' || text.length < 2) return;
 
         const currentTodos = appState.getState().todos;
         const newTodos = [
