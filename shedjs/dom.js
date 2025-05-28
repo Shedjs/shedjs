@@ -1,5 +1,19 @@
 class Dom {
     /**
+     * Creates a text node with proper type conversion.
+     * 
+     * @param {string|number} text - The text content
+     * @returns {Text} The created text node
+     * 
+     * @example
+     * const greeting = Dom.createTextNode('Hello'); // Text node
+     * const answer = Dom.createTextNode(01); // Converts numbers
+     */
+    static createTextNode(text) {
+        return document.createTextNode(String(text)); // Ensure string conversion
+    }
+
+    /**
      * Creates a DOM element with specified tag, properties, and children.
      * 
      * @param {string} tag - The HTML tag name (e.g., 'div', 'span')
@@ -18,17 +32,10 @@ class Dom {
             Dom.setAttribute(element, key, props[key]);
         });
 
-        // Process children (supports both text nodes and DOM elements)
+        // Process children using the SAME LOGIC as appendChild
+        // Supports all valid children: text, node, or array of them
         children.forEach(child => {
-            if (typeof child === 'string') {
-                // Convert strings to text nodes for safe insertion
-                element.appendChild(document.createTextNode(child));
-            } else if (child instanceof Node) {
-                // Append existing DOM nodes directly
-                element.appendChild(child);
-            } else {
-                console.warn('Unsupported child type ignored:', child);
-            }
+            Dom.appendChild(element, child); // Delegate to appendChild
         });
 
         return element;
@@ -128,37 +135,24 @@ class Dom {
             throw new Error(`Invalid parent element: Expected DOM Node, got ${parent?.constructor?.name}`);
         }
 
-        // Skip null/undefined without error (common in conditional rendering)
-        if (child == null) return;
+        if (child == null) return; // Skip null/undefined
 
         // Handle arrays recursively
         if (Array.isArray(child)) {
-            child.forEach(c => Dom.appendChild(parent, c));
+            child.forEach(c => Dom.appendChild(parent, c)); // Recursively flatten arrays
             return;
         }
 
-        // Convert primitives to text nodes
+        // Handle all supported child types
         if (typeof child === 'string' || typeof child === 'number') {
-            child = Dom.createTextNode(child.toString());
+            child = Dom.createTextNode(String(child)); // Primitives → text nodes
         } else if (child instanceof Node) {
-            parent.appendChild(child); // Only append valid DOM nodes
+            parent.appendChild(child); // Raw DOM nodes
+        } else if (child?.tag) { // <-- Add VNode support here for consistency
+            Dom.appendChild(parent, Dom.createFromVNode(child)); // Recursively render VNodes
         } else {
             console.warn('Unsupported child type ignored:', child);
         }
-    }
-
-    /**
-     * Creates a text node with proper type conversion.
-     * 
-     * @param {string|number} text - The text content
-     * @returns {Text} The created text node
-     * 
-     * @example
-     * const greeting = Dom.createTextNode('Hello'); // Text node
-     * const answer = Dom.createTextNode(01); // Converts numbers
-     */
-    static createTextNode(text) {
-        return document.createTextNode(String(text)); // Ensure string conversion
     }
 
     /**
@@ -203,7 +197,16 @@ class Dom {
         // - Null/undefined values (conditional rendering)
         // - Automatic text node conversion
         if (vnode.children) {
-            this.appendChild(element, vnode.children); // Reuses existing Dom logic
+            vnode.children.forEach(child => {
+                if (child == null) return; // Skip null/undefined
+                if (typeof child === 'string' || typeof child === 'number') {
+                    // Convert primitives to text nodes immediately
+                    this.appendChild(element, this.createTextNode(String(child)));
+                } else {
+                    // Handle arrays, VNodes, and DOM nodes normally
+                    this.appendChild(element, child);
+                }
+            });
         }
 
         return element;

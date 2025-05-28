@@ -13,12 +13,6 @@
     width: 1px
 }
 
-.toggle-all {
-    height: 60px !important;
-    right: auto !important;
-    width: 40px !important
-}
-
 .toggle-all-label {
     pointer-events: none
 }
@@ -33,7 +27,6 @@
     padding: 2px 5px;
     border-radius: 3px;
     color: #737373;
-    cursor: pointer;
 }
 
 body,
@@ -177,6 +170,10 @@ body {
     padding: 10px 27px;
     -webkit-transform: rotate(90deg);
     transform: rotate(90deg)
+}
+
+.toggle-all+label:before {
+    cursor: pointer
 }
 
 .toggle-all:checked+label:before {

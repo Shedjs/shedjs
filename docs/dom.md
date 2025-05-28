@@ -34,15 +34,33 @@ Dom is the only class that's designed in a singleton pattern with static methods
 
 | Methods                                      | Description                                                                |
 |----------------------------------------------|----------------------------------------------------------------------------|
+| `Dom.createTextNode(text)`                   | Create a text node from a string or number.                                |
 | `Dom.createElement(tag, props, ...children)` | Create a DOM element with attributes and child nodes.                      |
 | `Dom.setAttribute(element, key, value)`      | Set properties, attributes, or event listeners on a DOM element.           |
 | `Dom.appendChild(parent, child)`             | Add one or more children (text, elements, arrays) to a parent DOM node.    |
-| `Dom.createTextNode(text)`                   | Create a text node from a string or number.                                |
 | `Dom.createFromVNode(vnode)`                 | Convert a virtual DOM-like structure into real DOM nodes.                  |
 | `Dom.render(element, container)`             | Insert a DOM element into a container after clearing its contents.         |
 | `Dom.renderChainable(element, container)`    | render a DOM element to a container and then return a chainable interface. |
 
-### 1. `createElement(tag, props, ...children)`
+### 1. `createTextNode(text)`
+
+Creates a text node with the specified content.
+
+**Parameters:**
+
+- `text` (string): The text content
+
+**Returns:** Text
+
+**Example:**
+
+```js
+const textNode = Dom.createTextNode('Hello world');
+const div = Dom.createElement('div');
+Dom.appendChild(div, textNode);
+```
+
+### 2. `createElement(tag, props, ...children)`
 
 Creates a DOM element with specified tag, properties, and children.
 
@@ -106,7 +124,7 @@ const form = Dom.createElement('form',
 Dom.appendChild(document.body, form);
 ```
 
-### 2. `setAttribute(element, key, value)`
+### 3. `setAttribute(element, key, value)`
 
 Sets an attribute, property, or event listener on a DOM element.
 
@@ -134,25 +152,24 @@ Dom.setAttribute(div, 'style', {
 });
 ```
 
-### 3. `createTextNode(text)`
+### 4. `Dom.appendChild(parent, child)`
 
-Creates a text node with the specified content.
-
-**Parameters:**
-
-- `text` (string): The text content
-
-**Returns:** Text
-
-**Example:**
+Handles multiple child types:
+- DOM Nodes (appends directly)
+- Strings/Numbers (converts to text nodes)
+- Arrays (flattens and appends recursively)
+- Null/undefined values (silently skips)
 
 ```js
-const textNode = Dom.createTextNode('Hello world');
-const div = Dom.createElement('div');
-Dom.appendChild(div, textNode);
+Dom.appendChild(parent, 'Text')      // Strings → text nodes
+Dom.appendChild(parent, 123)         // Numbers → text nodes
+Dom.appendChild(parent, [a, b])      // Arrays → flattened
+Dom.appendChild(parent, domNode)     // Raw DOM nodes
+Dom.appendChild(parent, vnode)       // VNodes → converted via createFromVNode
+Dom.appendChild(parent, null)        // Skipped
 ```
 
-### 4. `Dom.createFromVNode(vnode)`
+### 5. `Dom.createFromVNode(vnode)`
 
 The framework also supports creating DOM elements from virtual node objects:
 
@@ -169,22 +186,13 @@ The framework also supports creating DOM elements from virtual node objects:
 ```js
 const vnode = {
     tag: 'div',
-    attrs: { class: 'container' },
+    attrs: { class: 'sadiqui' },
     children: [
-        {
-            tag: 'input',
-            attrs: { 
-                type: 'text',
-                placeholder: 'Enter name'
-            }
-        },
-        null,  // Safely skipped by Dom.appendChild()
-        ['Text Node', 123],  // Handled via array logic
-        {
-            tag: 'button',
-            attrs: { type: 'submit' },
-            children: ['Submit'] // Strings auto-converted to text nodes
-        }
+        { tag: 'input', attrs: { type: 'text', placeholder: 'Enter name' } },
+        null,
+        'Text Node',
+        123,
+        { tag: 'button', attrs: { type: 'submit' }, children: ['Submit', 'HI'] }
     ]
 };
 
@@ -192,7 +200,57 @@ const domTree = Dom.createFromVNode(vnode);
 Dom.appendChild(document.body, domTree);
 ```
 
-### 5. `Dom.renderChainable(element, container)`
+### 6. `Dom.render(element, container)`
+
+Clears the specified container and renders a DOM element into it. This is useful for "mounting" your app to a root DOM node.
+
+**Parameters:**
+
+- `element` (Node) - The DOM element to render (must be a valid Node)
+- `container` (Node) - The target container element (must be a valid Node)
+
+**Returns:**
+
+- The rendered element (for optional chaining)
+
+**Throws:**
+
+- FrameworkError if container is not a valid DOM node
+- Error if element is not a valid DOM node
+
+**Behavior:**
+
+- Validates both element and container
+- Clears all existing content from the container
+- Appends the new element
+- Returns the element for method chaining
+
+**Examples:**
+
+```js
+// Basic usage
+const app = document.getElementById('app');
+const root = Dom.createElement('div', { id: 'root' });
+Dom.render(root, app);
+
+// Method chaining
+Dom.render(
+  Dom.createElement('h1', {}, 'Hello World'),
+  document.body
+).classList.add('fade-in');
+
+// Rendering a VNode structure
+const vnode = {
+  tag: 'div',
+  children: [
+    { tag: 'h1', children: ['Welcome'] },
+    { tag: 'p', children: ['This was rendered from a VNode'] }
+  ]
+};
+Dom.render(Dom.createFromVNode(vnode), document.getElementById('app'));
+```
+
+### 7. `Dom.renderChainable(element, container)`
 
 Render a DOM element to a container and then return a chainable interface.
 
