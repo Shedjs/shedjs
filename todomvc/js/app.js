@@ -49,9 +49,15 @@ function renderTodos() {
         Dom.appendChild(todoListEl, div);
     }
 
-    // this condition for delete the footer when no tasks yet
-    // Show footer if there are any todos, even if all are completed/active
-    if (currentFilter === 'all' && filteredTodos.length === 0 && todos.length === 0) return
+    // Remove footer and show no-todo message, when there's no to
+    // if (currentFilter === 'all' && filteredTodos.length === 0 && todos.length === 0) return;
+    const firstP = document.querySelector('footer.info p');
+    if (todos.length === 0) {
+        firstP.classList.remove('hidden');
+        return;
+    } else {
+        firstP.classList.add('hidden');
+    }
 
     // this condition for display a message when no tasks active 
     if (currentFilter === 'active' && filteredTodos.length === 0 && todos.length > 0) {
