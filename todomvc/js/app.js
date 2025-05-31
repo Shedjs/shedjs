@@ -1,4 +1,4 @@
-import Dom from "/shedjs/dom.js";
+import TodoRenderer from './todoRenderer.js';
 import Event from "/shedjs/events.js";
 import Route from "/shedjs/routes.js";
 import State from "/shedjs/state.js";
@@ -15,113 +15,9 @@ const appState = new State({
     currentFilter: 'all'
 });
 
-// console.log("AppState:", appState);
+// Replace the old renderTodos function with the efficient TodoRenderer
+const todoRenderer = new TodoRenderer(todoListEl, appState);
 
-function escapeHTML(str) {
-    const p = Dom.createElement('p');
-    Dom.appendChild(p, Dom.createTextNode(str));
-    return p.innerHTML;
-}
-
-function renderTodos() {
-    const { todos, currentFilter } = appState.getState();
-    todoListEl.innerHTML = '';
-
-    // Filter todos based on the selected filter
-    const filteredTodos = todos.filter(todo => {
-        if (currentFilter === 'active') return !todo.completed;
-        if (currentFilter === 'completed') return todo.completed;
-        return true;
-    });
-
-    const footer = Dom.createElement('footer');
-    const div = Dom.createElement('div');
-    div.classList.add("toggle-all-container");
-
-    // Only render the toggle-all checkbox if there are todos
-    if (todos.length > 0) {
-        div.innerHTML = `
-            <input class="toggle-all" type="checkbox" data-testid="toggle-all"
-                   ${todos.every(t => t.completed) ? 'checked' : ''} 
-                   id="toggle-all" data-testid="toggle-all">
-            <label for="toggle-all"></label>
-        `;
-        Dom.appendChild(todoListEl, div);
-    }
-
-    // Remove footer and show no-todo message, when there's no to
-    // if (currentFilter === 'all' && filteredTodos.length === 0 && todos.length === 0) return;
-    const firstP = document.querySelector('footer.info p');
-    if (todos.length === 0) {
-        firstP.classList.remove('hidden');
-        return;
-    } else {
-        firstP.classList.add('hidden');
-    }
-
-    // this condition for display a message when no tasks active 
-    if (currentFilter === 'active' && filteredTodos.length === 0 && todos.length > 0) {
-        const emptyMessage = Dom.createElement('div');
-        emptyMessage.classList.add('empty-message');
-        emptyMessage.textContent = 'No active tasks found!';
-        Dom.appendChild(todoListEl, emptyMessage);
-    }
-
-    if (currentFilter === 'completed' && filteredTodos.length === 0 && todos.length > 0) {
-        const emptyMessage = Dom.createElement('div');
-        emptyMessage.classList.add('empty-message');
-        emptyMessage.textContent = 'No completed tasks yet!';
-        Dom.appendChild(todoListEl, emptyMessage);
-    } else {
-        // Render the filtered todos
-        filteredTodos.forEach(todo => {
-            const li = Dom.createElement('li');
-            li.dataset.id = todo.id;
-
-            if (todo.completed) {
-                li.classList.add('completed');
-            }
-
-            li.innerHTML = `
-                <div class="view">
-                    <input class="toggle" type="checkbox" ${todo.completed ? 'checked' : ''}>
-                    <label>${escapeHTML(todo.text)}</label>
-                    <button class="destroy"></button>
-                </div>
-                <input class="edit" value="${escapeHTML(todo.text)}">
-            `;
-
-            Dom.appendChild(todoListEl, li);
-        });
-    }
-
-    // Render footer
-    footer.innerHTML = `
-        <span class="todo-count">
-            <strong>${todos.filter(t => !t.completed).length}</strong> 
-            item${todos.filter(t => !t.completed).length === 1 ? '' : 's'} left
-        </span>
-        <ul class="filters" data-testid="footer-navigation">
-            <li>
-                <a class="${currentFilter === 'all' ? 'selected' : ''}" href="#/">All</a>
-            </li>
-            <li>
-                <a class="${currentFilter === 'active' ? 'selected' : ''}" href="#/active">Active</a>
-            </li>
-            <li>
-                <a class="${currentFilter === 'completed' ? 'selected' : ''}" href="#/completed">Completed</a>
-            </li>
-        </ul>
-        <button class="clear-completed" ${todos.some(t => t.completed) ? '' : 'style="display: none"'}>
-            Clear completed
-        </button>
-    `;
-
-    footer.classList.add("footer");
-    Dom.appendChild(todoListEl, footer);
-}
-
-// Route handlers for different filters
 function showAllTodos() {
     appState.setState({ currentFilter: 'all' });
 }
@@ -134,7 +30,6 @@ function showCompletedTodos() {
     appState.setState({ currentFilter: 'completed' });
 }
 
-// Register routes with your Route framework
 function setupRoutes() {
     router.addRoute('/', showAllTodos);
     router.addRoute('/active', showActiveTodos);
@@ -172,6 +67,10 @@ function toggleTodo(id) {
 }
 
 function startEditing(id, liElement) {
+    // Store original value before editing
+    const todo = appState.getState().todos.find(t => t.id === id);
+    liElement.dataset.originalText = todo.text;
+    
     liElement.classList.add('editing');
     const editInput = liElement.querySelector('.edit');
     editInput.focus();
@@ -193,15 +92,14 @@ function finishEditing(id, liElement, newText) {
     }
 }
 
-// Setup event handlers
+// Event handlers
 shedEvent.onEvent('keypress', '#todo-input', addTodo);
 
-// Filter click handler
 shedEvent.onEvent('click', '.filters a', (e) => {
     e.preventDefault();
     const target = e.target;
     const href = target.getAttribute('href');
-    const path = href.substring(1); // Remove the '#' from href
+    const path = href.substring(1);
     router.navigate(path);
 });
 
@@ -237,18 +135,17 @@ shedEvent.onEvent('dblclick', '.todo-list', (e) => {
         startEditing(todoId, li);
     }
 });
-shedEvent.onEvent('blur', '.edit', (e) => {
-    console.log('Bluriing');
-    const target = e.target;
-    const editInput = target.closest('.edit');
-    const li = editInput.closest('li');
-    if (!li || !editInput) return;
 
-    if (li && li.classList.contains('editing')) {
-        const todoId = Number(li.dataset.id);
-        renderTodos();
-    }
+shedEvent.onEvent('blur', '.edit', e => {
+    const editInput = e.target;
+    const li = editInput.closest('li');
+    if (!li || !li.classList.contains('editing')) return;
+    
+    // Cancel on blur - restore original value
+    editInput.value = li.dataset.originalText;
+    li.classList.remove('editing');
 });
+
 shedEvent.onEvent('keyup', '.todo-list', e => {
     const target = e.target;
     if (target.classList.contains('edit')) {
@@ -260,26 +157,29 @@ shedEvent.onEvent('keyup', '.todo-list', e => {
             finishEditing(todoId, li, target.value);
         } else if (e.key === 'Escape') {
             li.classList.remove('editing');
-            renderTodos();
+            // The renderer will automatically update when needed
         }
     }
 });
+
+// Clear-completed event handler
 shedEvent.onEvent('click', '.clear-completed', () => {
+    console.log('Before clear:', appState.getState().todos);
     const currentTodos = appState.getState().todos;
     const updatedTodos = currentTodos.filter(todo => !todo.completed);
     appState.setState({ todos: updatedTodos });
+    console.log('After clear:', appState.getState().todos);
 });
-
-// Subscribe to state changes to re-render todos
-appState.subscribe(renderTodos);
 
 // Initialize the application
 function initApp() {
     setupRoutes();
     router.init();
-    renderTodos();
+    // Initial render happens automatically when TodoRenderer is created
 }
 
 // Start the application
 initApp();
 
+// For testing/debugging - you can still manually trigger renders
+window.todoRenderer = todoRenderer;

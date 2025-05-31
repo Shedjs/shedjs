@@ -1,3 +1,4 @@
+
 class Dom {
     /**
      * Creates a text node with proper type conversion.
@@ -10,7 +11,7 @@ class Dom {
      * const answer = Dom.createTextNode(01); // Converts numbers
      */
     static createTextNode(text) {
-        return document.createTextNode(String(text)); // Ensure string conversion
+        return document.createTextNode(String(text));
     }
 
     /**
@@ -26,18 +27,12 @@ class Dom {
      */
     static createElement(tag, props = {}, ...children) {
         const element = document.createElement(tag);
-
-        // Apply all properties/attributes to the element
         Object.keys(props).forEach(key => {
             Dom.setAttribute(element, key, props[key]);
         });
-
-        // Process children using the SAME LOGIC as appendChild
-        // Supports all valid children: text, node, or array of them
         children.forEach(child => {
-            Dom.appendChild(element, child); // Delegate to appendChild
+            Dom.appendChild(element, child);
         });
-
         return element;
     }
 
@@ -67,38 +62,27 @@ class Dom {
      */
     static setAttribute(element, key, value) {
         if (!(element instanceof Node)) {
-            throw new FrameworkError(
-                'DOM',
-                'INVALID_NODE',
-                `Expected valid DOM Node for setAttribute()`,
-                { received: element?.constructor?.name, key, value }
-            );
+            throw new Error(`Expected valid DOM Node for setAttribute(), got ${element?.constructor?.name}`);
         }
 
-        // Handle event listeners (e.g., onClick, onInput)
         if (key.startsWith('on') && typeof value === "function") {
-            // const event = key.slice(2).toLowerCase();
-            // element.addEventListener(event, value);
             element[key.toLowerCase()] = value;
-            return; // Early return for clean control flow
+            return;
         }
 
-        // Special cases for className and style
         switch (key) {
             case 'className':
-                element.className = value; // Direct property access
+                element.className = value;
                 break;
             case 'style':
                 if (typeof value === 'object') {
-                    Object.assign(element.style, value); // Merge style objects
+                    Object.assign(element.style, value);
                 }
                 break;
             default:
-                // Set as property if it exists on the element
                 if (key in element) {
-                    element[key] = value; // ex: id, value, hidden
+                    element[key] = value;
                 } else {
-                    // Fallback to HTML attribute
                     element.setAttribute(key, value);
                 }
         }
@@ -135,21 +119,19 @@ class Dom {
             throw new Error(`Invalid parent element: Expected DOM Node, got ${parent?.constructor?.name}`);
         }
 
-        if (child == null) return; // Skip null/undefined
+        if (child == null) return;
 
-        // Handle arrays recursively
         if (Array.isArray(child)) {
-            child.forEach(c => Dom.appendChild(parent, c)); // Recursively flatten arrays
+            child.forEach(c => Dom.appendChild(parent, c));
             return;
         }
 
-        // Handle all supported child types
         if (typeof child === 'string' || typeof child === 'number') {
-            child = Dom.createTextNode(String(child)); // Primitives → text nodes
+            parent.appendChild(Dom.createTextNode(String(child)));
         } else if (child instanceof Node) {
-            parent.appendChild(child); // Raw DOM nodes
-        } else if (child?.tag) { // <-- Add VNode support here for consistency
-            Dom.appendChild(parent, Dom.createFromVNode(child)); // Recursively render VNodes
+            parent.appendChild(child);
+        } else if (child?.tag) {
+            Dom.appendChild(parent, Dom.createFromVNode(child));
         } else {
             console.warn('Unsupported child type ignored:', child);
         }
@@ -181,29 +163,18 @@ class Dom {
      * Dom.appendChild(document.body, domElement);
      */
     static createFromVNode(vnode) {
-        // Handle text nodes (strings/numbers)
-        // These are leaf nodes in the VDOM tree
         if (typeof vnode === 'string' || typeof vnode === 'number') {
-            return this.createTextNode(vnode); // Uses existing text node utility
+            return this.createTextNode(vnode);
         }
 
-        // Create the actual DOM element for this VDOM node
-        // Uses the framework's createElement() to handle props/attributes
         const element = this.createElement(vnode.tag, vnode.attrs || {});
 
-        // Process children recursively if they exist
-        // Note: Uses the framework's appendChild() to handle:
-        // - Arrays of children
-        // - Null/undefined values (conditional rendering)
-        // - Automatic text node conversion
         if (vnode.children) {
             vnode.children.forEach(child => {
-                if (child == null) return; // Skip null/undefined
+                if (child == null) return;
                 if (typeof child === 'string' || typeof child === 'number') {
-                    // Convert primitives to text nodes immediately
                     this.appendChild(element, this.createTextNode(String(child)));
                 } else {
-                    // Handle arrays, VNodes, and DOM nodes normally
                     this.appendChild(element, child);
                 }
             });
@@ -235,27 +206,18 @@ class Dom {
      * ).classList.add('fade-in');
      */
     static render(element, container) {
-        // Validate inputs with detailed errors
         if (!(container instanceof Node)) {
-            throw new FrameworkError(
-                'DOM',
-                'INVALID_CONTAINER',
-                'Container must be a DOM element',
-                { received: container?.constructor?.name }
-            );
+            throw new Error('Container must be a DOM element');
         }
-
         if (!(element instanceof Node)) {
-            throw newError(`Invalid element: Expected DOM Node, got ${element?.constructor?.name}`);
+            throw new Error(`Invalid element: Expected DOM Node, got ${element?.constructor?.name}`);
         }
 
-        // Performance optimization: Skip clear if container is empty
         if (container.hasChildNodes()) {
-            container.innerHTML = ''; // Clear existing content
+            container.innerHTML = '';
         }
-
         container.appendChild(element);
-        return element; // Allow method chaining
+        return element;
     }
 
     /**
@@ -286,28 +248,183 @@ class Dom {
      * element.focus(); // Access raw DOM node when needed
      */
     static renderChainable(element, container) {
-        // Renders element and stores reference
         const renderedElement = this.render(element, container);
-
-        // Chainable interface that proxies to core Dom methods
         const chainable = {
             element: renderedElement,
-            // Sets attributes/properties via Dom.setAttribute()
             set: (k, v) => { this.setAttribute(renderedElement, k, v); return chainable; },
-            // Appends children via Dom.appendChild()
             addChildren: (children) => {
                 this.appendChild(renderedElement, children);
                 return chainable;
             },
-            // Handles events via Dom.setAttribute()'s on* logic
             on: (evt, handler) => {
                 this.setAttribute(renderedElement, `on${evt}`, handler);
                 return chainable;
             }
         };
-
         return chainable;
+    }
+
+    // Virtual DOM helper for creating VNodes
+    static h(tag, attrs = {}, children = []) {
+        return {
+            tag,
+            attrs,
+            children: Array.isArray(children) ? children : [children],
+            key: attrs.key || null
+        };
+    }
+
+    // Efficient diffing and patching
+    static patch(parent, newVNode, oldVNode, index = 0) {
+        // Handle null/undefined cases
+        if (!oldVNode && !newVNode) return;
+
+        // Case 1: New node added
+        if (!oldVNode) {
+            const newNode = this.createFromVNode(newVNode);
+            if (parent.childNodes[index]) {
+                parent.insertBefore(newNode, parent.childNodes[index]);
+            } else {
+                parent.appendChild(newNode);
+            }
+            return;
+        }
+
+        // Case 2: Node removed
+        if (!newVNode) {
+            const nodeToRemove = parent.childNodes[index];
+            if (nodeToRemove) {
+                parent.removeChild(nodeToRemove);
+            }
+            return;
+        }
+
+        // Case 3: Nodes are different (by key or type)
+        if (this.hasChanged(newVNode, oldVNode)) {
+            const nodeToReplace = parent.childNodes[index];
+            if (nodeToReplace) {
+                parent.replaceChild(this.createFromVNode(newVNode), nodeToReplace);
+            }
+            return;
+        }
+
+        // Case 4: Same node type, update attributes and children
+        if (newVNode.tag) {
+            const element = parent.childNodes[index];
+            if (element) {
+                this.updateAttributes(element, newVNode.attrs || {}, oldVNode.attrs || {});
+                this.patchChildren(element, newVNode.children || [], oldVNode.children || []);
+            }
+        }
+    }
+
+    static hasChanged(node1, node2) {
+        // Different types
+        if (typeof node1 !== typeof node2) return true;
+
+        // Primitive values
+        if (typeof node1 === 'string' || typeof node1 === 'number') {
+            return node1 !== node2;
+        }
+
+        // Different tags
+        if (node1.tag !== node2.tag) return true;
+
+        // Different keys (if both have keys)
+        if (node1.attrs?.key !== undefined && node2.attrs?.key !== undefined) {
+            return node1.attrs.key !== node2.attrs.key;
+        }
+
+        return false;
+    }
+
+    static updateAttributes(element, newAttrs, oldAttrs) {
+        // Remove old attributes that are no longer present
+        Object.keys(oldAttrs).forEach(key => {
+            if (!(key in newAttrs)) {
+                if (key === 'className') {
+                    element.className = '';
+                } else if (key === 'checked' || key === 'disabled' || key === 'selected') {
+                    element[key] = false;
+                } else if (key.startsWith('on')) {
+                    element[key.toLowerCase()] = null;
+                } else {
+                    element.removeAttribute(key);
+                }
+            }
+        });
+
+        // Set new/changed attributes
+        Object.entries(newAttrs).forEach(([key, value]) => {
+            if (oldAttrs[key] !== value) {
+                this.setAttribute(element, key, value);
+            }
+        });
+    }
+
+    static patchChildren(parent, newChildren, oldChildren) {
+        try {
+            console.group('Diffing children');
+            console.log('Old children:', oldChildren);
+            console.log('New children:', newChildren);
+
+            // If completely different, just replace
+            if (newChildren.length === 0 || oldChildren.length === 0) {
+                parent.innerHTML = '';
+                newChildren.forEach(child => {
+                    parent.appendChild(this.createFromVNode(child));
+                });
+                return;
+            }
+
+            // First remove excess old children
+            while (parent.childNodes.length > newChildren.length) {
+                parent.removeChild(parent.lastChild);
+            }
+
+            // Then update/add children
+            for (let i = 0; i < newChildren.length; i++) {
+                const newChild = newChildren[i];
+                const oldChild = oldChildren[i];
+                const domNode = parent.childNodes[i];
+
+                if (!domNode) {
+                    // New node needs to be added
+                    parent.appendChild(this.createFromVNode(newChild));
+                } else if (!oldChild || this.hasChanged(newChild, oldChild)) {
+                    // Node needs replacement
+                    parent.replaceChild(this.createFromVNode(newChild), domNode);
+                } else if (newChild.tag) {
+                    // Update existing node
+                    this.updateAttributes(domNode, newChild.attrs || {}, oldChild.attrs || {});
+                    this.patchChildren(domNode, newChild.children || [], oldChild.children || []);
+                }
+            }
+            console.groupEnd();
+        } catch (error) {
+            console.error('Diffing error:', error);
+            // Fallback to full re-render
+            parent.innerHTML = '';
+            newChildren.forEach(child => {
+                parent.appendChild(this.createFromVNode(child));
+            });
+        }
+
+    }
+
+    // Efficient render method that handles diffing
+    static renderWithDiff(container, newVTree, oldVTree = null) {
+        if (!oldVTree) {
+            // Initial render
+            container.innerHTML = '';
+            if (newVTree) {
+                container.appendChild(this.createFromVNode(newVTree));
+            }
+        } else {
+            // Efficient update using diffing
+            this.patch(container, newVTree, oldVTree, 0);
+        }
     }
 }
 
-export default Dom
+export default Dom;

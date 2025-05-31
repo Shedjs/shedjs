@@ -1,4 +1,4 @@
 .PHONY: todo
 
 todo:
-	cd todomvc/js && node server.js        #
+	cd todomvc/js && node server.js
