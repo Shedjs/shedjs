@@ -10,7 +10,7 @@
 This JavaScript mini-framework was developed by <a href="https://github.com/sadiqui">@S</a>adiqui, <a href="https://github.com/youssefhrouk">@H</a>rouk, <a href="https://github.com/aelidris">@E</a>lidrissi, and <a href="https://github.com/majnun917">@D</a>ieye.
 </p>
 
-## Features
+## Core Features
 
 1. **[Virtual DOM Layer](/shedjs/dom.js)**: The framework introduces a Virtual DOM system that acts as an intermediary between your application logic and the actual DOM. Instead of manipulating real DOM elements directly, which can be slow and inefficient, the framework constructs a lightweight JavaScript representation of the DOM. Changes are first applied to this virtual structure, and then a diffing algorithm efficiently updates only the necessary parts of the real DOM. This abstraction enhances performance and simplifies UI updates.
 
@@ -22,17 +22,11 @@ This JavaScript mini-framework was developed by <a href="https://github.com/sadi
 
 ## Initialization
 
-To get started with the framework, you must first include the core module located at [framework/module.js](/shedjs/module.js) in your project. This file contains the main logic that powers the framework's functionality. Once imported, you can create and configure your framework instance by providing it with two essential components:
-
-- **Initial Application State:** Defines the starting point of your app's dynamic data, which the framework will manage and react to.
-
-- **Routing Configuration:** A mapping of URL paths to their respective components or views, enabling navigation and dynamic rendering within your single-page application.
-
-This initialization step lays the foundation for a fully interactive, reactive, and maintainable front-end architecture, allowing you to build modular and scalable web applications with minimal setup.
+For detailed guidance on how to get started with the framework, please refer to our [core documentation](/docs/core/).
 
 ## Code Examples
 
-For detailed usage examples and module explanations, please visit our [documentation folder](/docs/module.md).
+For in-depth examples and usage of the framework’s APIs and methods, please see our [modules documentation](/docs/modules/).
 
 ## TodoMVC
 

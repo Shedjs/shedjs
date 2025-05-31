@@ -264,7 +264,29 @@ class Dom {
         return chainable;
     }
 
-    // Virtual DOM helper for creating VNodes
+    /**
+     * Creates a Virtual DOM node (VNode) with specified tag, attributes, and children.
+     * 
+     * @param {string} tag - The HTML tag name (e.g., 'div', 'span')
+     * @param {Object} [attrs={}] - Element attributes/properties (e.g., { id: 'app', onClick: handler })
+     * @param {Array|Node|string} [children=[]] - Child elements or text content
+     * @returns {Object} VNode object with:
+     *   - tag {string} - The element tag name
+     *   - attrs {Object} - Attributes/properties
+     *   - children {Array} - Array of child nodes
+     *   - key {string|null} - Optional key for reconciliation
+     * 
+     * @example
+     * // Simple element
+     * const vnode = Dom.h('div', { id: 'container' }, 'Hello');
+     * 
+     * @example
+     * // With children
+     * Dom.h('ul', {}, [
+     *   Dom.h('li', {}, 'Item 1'),
+     *   Dom.h('li', {}, 'Item 2')
+     * ]);
+     */
     static h(tag, attrs = {}, children = []) {
         return {
             tag,
@@ -274,7 +296,19 @@ class Dom {
         };
     }
 
-    // Efficient diffing and patching
+    /**
+     * Efficiently patches the DOM by comparing old and new Virtual DOM nodes.
+     * Performs minimal updates to match the new structure.
+     * 
+     * @param {Node} parent - The parent DOM element
+     * @param {Object|null} newVNode - The new VNode to render
+     * @param {Object|null} oldVNode - The previous VNode for comparison
+     * @param {number} [index=0] - Child position index
+     * 
+     * @example
+     * // Basic usage
+     * Dom.patch(container, newVTree, oldVTree);
+     */
     static patch(parent, newVNode, oldVNode, index = 0) {
         // Handle null/undefined cases
         if (!oldVNode && !newVNode) return;
@@ -318,6 +352,17 @@ class Dom {
         }
     }
 
+    /**
+     * Determines if two VNodes are different and require DOM updates.
+     * Compares types, tags, and keys for efficient change detection.
+     * 
+     * @param {Object|string|number} node1 - First VNode to compare
+     * @param {Object|string|number} node2 - Second VNode to compare
+     * @returns {boolean} True if nodes are significantly different
+     * 
+     * @example
+     * const needsUpdate = Dom.hasChanged(newNode, oldNode);
+     */
     static hasChanged(node1, node2) {
         // Different types
         if (typeof node1 !== typeof node2) return true;
@@ -338,6 +383,17 @@ class Dom {
         return false;
     }
 
+    /**
+     * Updates DOM element attributes by comparing old and new attribute sets.
+     * Only modifies attributes that actually changed.
+     * 
+     * @param {Node} element - The target DOM element
+     * @param {Object} newAttrs - New attributes to apply
+     * @param {Object} oldAttrs - Previous attributes for comparison
+     * 
+     * @example
+     * Dom.updateAttributes(el, { class: 'active' }, { class: '' });
+     */
     static updateAttributes(element, newAttrs, oldAttrs) {
         // Remove old attributes that are no longer present
         Object.keys(oldAttrs).forEach(key => {
@@ -362,6 +418,18 @@ class Dom {
         });
     }
 
+    /**
+     * Recursively updates child nodes by comparing old and new VNode children.
+     * Handles additions, removals, and updates with minimal DOM operations.
+     * 
+     * @param {Node} parent - The parent DOM element
+     * @param {Array} newChildren - Array of new child VNodes
+     * @param {Array} oldChildren - Array of previous child VNodes
+     * @throws Will fallback to full re-render if errors occur
+     * 
+     * @example
+     * Dom.patchChildren(ulElement, newItems, oldItems);
+     */
     static patchChildren(parent, newChildren, oldChildren) {
         try {
             console.group('Diffing children');
@@ -412,7 +480,22 @@ class Dom {
 
     }
 
-    // Efficient render method that handles diffing
+    /**
+     * Efficiently renders a VNode tree with smart diffing against previous version.
+     * Automatically handles initial render and subsequent updates.
+     * 
+     * @param {Node} container - The target DOM container
+     * @param {Object} newVTree - The complete new VNode tree
+     * @param {Object|null} [oldVTree=null] - Previous VNode tree for diffing
+     * 
+     * @example
+     * // Initial render
+     * Dom.renderWithDiff(app, vtree);
+     * 
+     * @example
+     * // Subsequent update
+     * Dom.renderWithDiff(app, newVtree, oldVtree);
+     */
     static renderWithDiff(container, newVTree, oldVTree = null) {
         if (!oldVTree) {
             // Initial render
