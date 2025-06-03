@@ -1,18 +1,27 @@
+/**
+ * @callback EventCallback
+ * @param {globalThis.Event} e
+ * @param {Element | Window} el
+ * @returns {void}
+ */
+
+/**
+ * @typedef {Object} EventHandler
+ * @property {number} id
+ * @property {string} event
+ * @property {string} selector
+ * @property {EventCallback} callback
+ * @property {Map<Element, EventListener>} domListeners
+ * @property {EventListener|null} windowListener
+ */
+
 import { FrameworkError } from "./errors.js"
 
-class Event {
+export class Event {
     constructor() {
         /**
-         * Internal registry of all event handlers.
-         * Structure: {
-         *   id: number,
-         *   event: string,
-         *   selector: string,
-         *   callback: Function,
-         *   domListeners: Map<Element, Function>,
-         *   windowListener: Function|null
-         * }
-         * @private
+         * @type {EventHandler[]}
+         * @private 
          */
         this._handlers = [];
 
@@ -73,11 +82,10 @@ class Event {
 
     /**
      * Registers a new event handler
-     * @param {string} event - Event type (e.g., 'click', 'keyup')
-     * @param {string} selector - CSS selector or 'window'/'document' for global events
-     * @param {Function} callback - Handler function
-     * @returns {number} Handler ID for removal
-     * @throws {FrameworkError} On invalid event type or callback
+     * @param {string} event
+     * @param {string} selector
+     * @param {EventCallback} callback
+     * @returns {number}
      */
     onEvent(event, selector, callback) {
         if (!this._supportedEvents.includes(event)) {
@@ -104,9 +112,8 @@ class Event {
             event,
             selector,
             callback,
-            // Store actual DOM listeners for proper cleanup
-            domListeners: new Map(), // Map<Element, Function>
-            windowListener: null     // For window/document events
+            domListeners: new Map(), // Must be Map, not WeakMap
+            windowListener: null, // Must match the type (null is now allowed)
         };
 
         this._handlers.push(handler);
@@ -158,36 +165,48 @@ class Event {
     /**
      * Clean up all DOM listeners for a specific handler
      * @private
-     * @param {object} handler - The handler object to clean up
+     * @param {EventHandler} handler
      */
     _cleanupHandler(handler) {
-        // Clean up window/document listeners
-        if (handler.windowListener) {
-            // window.removeEventListener(handler.event, handler.windowListener);
-            handler.windowListener = null; // Mark as inactive
+        // Window listener cleanup
+        if (handler.windowListener && typeof handler.windowListener === 'function') {
+            try {
+                window.removeEventListener(
+                    handler.event,
+                    handler.windowListener
+                );
+            } catch (e) {
+                console.warn(`Failed to remove window listener for ${handler.event}`, e);
+            }
         }
 
-        // Clean up element listeners
-        // handler.domListeners.forEach((listenerFn, element) => {
-        //     element.removeEventListener(handler.event, listenerFn);
-        // });
+        // DOM listeners cleanup
+        handler.domListeners.forEach((listener, element) => {
+            if (typeof listener === 'function') {
+                try {
+                    element.removeEventListener(handler.event, listener);
+                } catch (e) {
+                    console.warn(`Failed to remove DOM listener for ${handler.event}`, e);
+                }
+            }
+        });
         handler.domListeners.clear();
     }
 
     /**
      * Applies an event handler to matching elements with proper listener storage
      * @private
-     * @param {object} handler - The handler object from _handlers
+     * @param {EventHandler} handler
      */
     _applyEventHandler(handler) {
-        const { event, selector, callback, id } = handler;
+        const { event, selector, callback } = handler;
 
         // Handle window/document events
         if (this._winOrDocEvents.includes(event) && (selector === 'window' || selector === 'document')) {
-            const winListener = (e) => callback(e, window);
+            /** @type {EventListener} */
+            const winListener = (e /** @type {globalThis.Event} */) => callback(e, window);
             handler.windowListener = winListener;
-            // window.addEventListener(event, winListener);
-            window[`on${event}`] = winListener; // ⚠️ Inline assignment
+            window.addEventListener(event, winListener);
             return;
         }
 
@@ -209,7 +228,7 @@ class Event {
                 if (!elementEvents.has(event)) {
                     elementEvents.add(event);
 
-                    // NEW: Create and store the actual DOM listener function
+                    /** @type {EventListener} */
                     const domListener = (e) => {
                         // Execute ALL handlers that match this event and element
                         this._handlers.forEach(h => {
@@ -223,8 +242,8 @@ class Event {
                     // Store the listener for cleanup
                     handler.domListeners.set(el, domListener);
 
-                    // el.addEventListener(event, domListener);
-                    el[`on${event}`] = domListener; // ⚠️ Inline assignment
+                    // Cast to EventListener to avoid overload errors
+                    el.addEventListener(event, /** @type {EventListener} */(domListener));
                 }
             });
         } catch (error) {
@@ -273,20 +292,18 @@ class Event {
                 subtree: true
             });
         } else {
-            // window.addEventListener('DOMContentLoaded', () => {
-            window.onload = () => { // ⚠️ Inline fallback (less ideal)
+            window.addEventListener('DOMContentLoaded', () => {
+                // window.onload = () => { // Inline fallback (less ideal)
                 if (this._observer && document.body) {
                     this._observer.observe(document.body, {
                         childList: true,
                         subtree: true
                     });
                 }
-            };
+            });
         }
 
         this._initialized = true;
         console.log('Event system initialized');
     }
 }
-
-export default Event;

@@ -1,7 +1,7 @@
-import TodoRenderer from './todoRenderer.js';
-import Event from "/shedjs/events.js";
-import Route from "/shedjs/routes.js";
-import State from "/shedjs/state.js";
+import { TodoRenderer } from './todoRenderer.js';
+import { Event } from "/shedjs/events.js";
+import { Route } from "/shedjs/routes.js";
+import { State } from "/shedjs/state.js";
 
 const todoInput = document.getElementById('todo-input');
 const todoListEl = document.querySelector('.todo-list');

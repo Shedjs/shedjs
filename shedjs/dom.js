@@ -1,5 +1,11 @@
+/**
+ * @typedef {Object} VNode
+ * @property {string} tag - HTML tag name
+ * @property {Object.<string, string>} [attrs] - HTML attributes
+ * @property {Array<VNode|string|number>} [children] - Child nodes (can be VNodes, strings, or numbers)
+ */
 
-class Dom {
+export class Dom {
     /**
      * Creates a text node with proper type conversion.
      * 
@@ -18,7 +24,7 @@ class Dom {
      * Creates a DOM element with specified tag, properties, and children.
      * 
      * @param {string} tag - The HTML tag name (e.g., 'div', 'span')
-     * @param {Object} [props={}] - Element properties/attributes (e.g., { id: 'app', onClick: handler })
+     * @param {{ [key: string]: any }} [props={}] - Element properties/attributes
      * @param {...(Node|string)} children - Child elements or text content
      * @returns {HTMLElement} The created DOM element
      * 
@@ -45,7 +51,7 @@ class Dom {
      * - Native element properties
      * - Fallback to HTML attributes
      * 
-     * @param {Node} element - The target DOM element
+     * @param {HTMLElement} element - The target DOM element
      * @param {string} key - Attribute/property name (e.g., 'id', 'onClick', 'style')
      * @param {*} value - The value to set (type depends on key)
      * @throws {Error} If element is not a valid DOM node
@@ -61,12 +67,14 @@ class Dom {
      * Dom.setAttribute(div, 'style', { color: 'red', fontSize: '16px' });
      */
     static setAttribute(element, key, value) {
-        if (!(element instanceof Node)) {
-            throw new Error(`Expected valid DOM Node for setAttribute(), got ${element?.constructor?.name}`);
+        const name = element && typeof element === 'object' ? element.constructor?.name : typeof element;
+
+        if (!(element instanceof HTMLElement)) {
+            throw new Error(`Expected valid HTMLElement for setAttribute(), got ${name}`);
         }
 
         if (key.startsWith('on') && typeof value === "function") {
-            element[key.toLowerCase()] = value;
+        /** @type {any} */ (element)[key.toLowerCase()] = value;
             return;
         }
 
@@ -81,7 +89,7 @@ class Dom {
                 break;
             default:
                 if (key in element) {
-                    element[key] = value;
+                /** @type {any} */ (element)[key] = value;
                 } else {
                     element.setAttribute(key, value);
                 }
@@ -97,7 +105,7 @@ class Dom {
      * - Null/undefined values (silently skips)
      * 
      * @param {Node} parent - The target parent element
-     * @param {Node|string|number|Array|null} child - Child to append (or array of children)
+     * @param {(Node|string|number|(Node|string|number|null)[]|null)} child - Child to append
      * @throws {Error} If parent is not a valid DOM node
      * 
      * @example
@@ -115,8 +123,9 @@ class Dom {
      * ]);
      */
     static appendChild(parent, child) {
+        const typeName = parent?.constructor?.name;
         if (!(parent instanceof Node)) {
-            throw new Error(`Invalid parent element: Expected DOM Node, got ${parent?.constructor?.name}`);
+            throw new Error(`Invalid parent element: Expected DOM Node, got ${typeName}`);
         }
 
         if (child == null) return;
@@ -130,7 +139,7 @@ class Dom {
             parent.appendChild(Dom.createTextNode(String(child)));
         } else if (child instanceof Node) {
             parent.appendChild(child);
-        } else if (child?.tag) {
+        } else if (typeof child === 'object' && 'tag' in child) {
             Dom.appendChild(parent, Dom.createFromVNode(child));
         } else {
             console.warn('Unsupported child type ignored:', child);
@@ -141,11 +150,9 @@ class Dom {
      * Converts a Virtual DOM (VDOM) node into a real DOM element.
      * Recursively processes child nodes and handles primitive values.
      * 
-     * @static
-     * @param {Object|string|number} vnode - The virtual node to convert. Can be:
-     *   - An object with `tag`, `attrs`, `children` (VDOM structure)
-     *   - A string/number (converted to text node)
+     * @param {VNode|string|number} vnode - The virtual node to convert.
      * @returns {Node} The created DOM element or text node.
+     * @throws {Error} If vnode is invalid or missing 'tag' property.
      * 
      * @example
      * // VDOM input
@@ -164,20 +171,26 @@ class Dom {
      */
     static createFromVNode(vnode) {
         if (typeof vnode === 'string' || typeof vnode === 'number') {
-            return this.createTextNode(vnode);
+            return Dom.createTextNode(String(vnode));
         }
 
-        const element = this.createElement(vnode.tag, vnode.attrs || {});
+        if (typeof vnode !== 'object' || vnode === null || !('tag' in vnode)) {
+            throw new Error('Invalid VNode: missing "tag" property');
+        }
 
-        if (vnode.children) {
-            vnode.children.forEach(child => {
-                if (child == null) return;
-                if (typeof child === 'string' || typeof child === 'number') {
-                    this.appendChild(element, this.createTextNode(String(child)));
-                } else {
-                    this.appendChild(element, child);
-                }
-            });
+        const element = Dom.createElement(vnode.tag, vnode.attrs || {});
+
+        if (Array.isArray(vnode.children)) {
+            vnode.children.forEach(
+                /** @param {VNode | string | number | null} child */
+                (child) => {
+                    if (child == null) return;
+                    if (typeof child === 'string' || typeof child === 'number') {
+                        Dom.appendChild(element, Dom.createTextNode(child));
+                    } else {
+                        Dom.appendChild(element, Dom.createFromVNode(child));
+                    }
+                });
         }
 
         return element;
@@ -186,10 +199,10 @@ class Dom {
     /**
      * Clears and renders a DOM element into a container.
      * Safely replaces all existing content in the container.
-     * 
-     * @param {Node} element - The DOM element to render (must be a valid Node)
-     * @param {Node} container - The target container (must be a valid Node)
-     * @returns {Node} The rendered element for chaining
+     *
+     * @param {Element} element - The DOM element to render (must be a valid Element)
+     * @param {Element} container - The target container (must be a valid Element)
+     * @returns {Element} The rendered element for chaining
      * @throws {Error} If container or element is invalid
      * 
      * @example
@@ -205,32 +218,34 @@ class Dom {
      *   document.body
      * ).classList.add('fade-in');
      */
-    static render(element, container) {
-        if (!(container instanceof Node)) {
-            throw new Error('Container must be a DOM element');
+    static render(
+        /** @type {Element} */ element,
+        /** @type {Element} */ container
+    ) {
+        if (!(container instanceof HTMLElement)) {
+            throw new Error('Container must be a DOM Element');
         }
-        if (!(element instanceof Node)) {
-            throw new Error(`Invalid element: Expected DOM Node, got ${element?.constructor?.name}`);
+        if (!(element instanceof HTMLElement)) {
+            throw new Error(`Invalid element: Expected DOM Element, got ${Object.prototype.toString.call(element)}`);
         }
 
-        if (container.hasChildNodes()) {
-            container.innerHTML = '';
-        }
+        container.innerHTML = '';
         container.appendChild(element);
         return element;
     }
 
     /**
-     * Chainable version of render() that returns an interface with Dom methods.
+     * Chainable version of render() that returns an interface with DOM methods.
      * Allows fluent-style operations after rendering, in a consistent behavior.
      * 
-     * @param {Node} element - DOM element to render
-     * @param {Node} container - Target container element
-     * @returns {Object} Chainable interface with:
-     *   - .element {Node} - Reference to the rendered DOM node
-     *   - .set(key, value) - Proxy to Dom.setAttribute()
-     *   - .addChildren(children) - Proxy to Dom.appendChild()
-     *   - .on(event, handler) - Uses Dom.setAttribute()'s event handling
+     * @param {HTMLElement} element - DOM element to render
+     * @param {HTMLElement} container - Target container element
+     * @returns {{
+     *   element: HTMLElement,
+     *   set: (key: string, value: any) => any,
+     *   addChildren: (children: any[] | Node) => any,
+     *   on: (event: string, handler: EventListener) => any
+     * }}
      * 
      * @example
      * // Fluent chaining
@@ -248,16 +263,21 @@ class Dom {
      * element.focus(); // Access raw DOM node when needed
      */
     static renderChainable(element, container) {
-        const renderedElement = this.render(element, container);
+        /** @type {HTMLElement} */
+        const renderedElement = /** @type {HTMLElement} */ (this.render(element, container));
+
         const chainable = {
             element: renderedElement,
-            set: (k, v) => { this.setAttribute(renderedElement, k, v); return chainable; },
-            addChildren: (children) => {
+            set: (/** @type {string} */ key, /** @type {any} */ value) => {
+                this.setAttribute(renderedElement, key, value);
+                return chainable;
+            },
+            addChildren: (/** @type {any[] | Node} */ children) => {
                 this.appendChild(renderedElement, children);
                 return chainable;
             },
-            on: (evt, handler) => {
-                this.setAttribute(renderedElement, `on${evt}`, handler);
+            on: (/** @type {string} */ event, /** @type {EventListener} */ handler) => {
+                this.setAttribute(renderedElement, `on${event}`, handler);
                 return chainable;
             }
         };
@@ -268,13 +288,14 @@ class Dom {
      * Creates a Virtual DOM node (VNode) with specified tag, attributes, and children.
      * 
      * @param {string} tag - The HTML tag name (e.g., 'div', 'span')
-     * @param {Object} [attrs={}] - Element attributes/properties (e.g., { id: 'app', onClick: handler })
-     * @param {Array|Node|string} [children=[]] - Child elements or text content
-     * @returns {Object} VNode object with:
-     *   - tag {string} - The element tag name
-     *   - attrs {Object} - Attributes/properties
-     *   - children {Array} - Array of child nodes
-     *   - key {string|null} - Optional key for reconciliation
+     * @param {Record<string, any>} [attrs={}] - Element attributes/properties (e.g., { id: 'app', onClick: handler })
+     * @param {(Array<any>|Node|string)} [children=[]] - Child elements or text content
+     * @returns {{
+     *   tag: string,
+     *   attrs: Record<string, any>,
+     *   children: Array<any>,
+     *   key: string|null
+     * }}
      * 
      * @example
      * // Simple element
@@ -301,8 +322,8 @@ class Dom {
      * Performs minimal updates to match the new structure.
      * 
      * @param {Node} parent - The parent DOM element
-     * @param {Object|null} newVNode - The new VNode to render
-     * @param {Object|null} oldVNode - The previous VNode for comparison
+     * @param {VNode|null} newVNode - The new VNode to render
+     * @param {VNode|null} oldVNode - The previous VNode for comparison
      * @param {number} [index=0] - Child position index
      * 
      * @example
@@ -315,7 +336,7 @@ class Dom {
 
         // Case 1: New node added
         if (!oldVNode) {
-            const newNode = this.createFromVNode(newVNode);
+            const newNode = this.createFromVNode(/** @type {VNode} */(newVNode));
             if (parent.childNodes[index]) {
                 parent.insertBefore(newNode, parent.childNodes[index]);
             } else {
@@ -325,7 +346,7 @@ class Dom {
         }
 
         // Case 2: Node removed
-        if (!newVNode) {
+        if (!newVNode && oldVNode) {
             const nodeToRemove = parent.childNodes[index];
             if (nodeToRemove) {
                 parent.removeChild(nodeToRemove);
@@ -333,8 +354,8 @@ class Dom {
             return;
         }
 
-        // Case 3: Nodes are different (by key or type)
-        if (this.hasChanged(newVNode, oldVNode)) {
+        // Case 3: Nodes are different
+        if (newVNode && oldVNode && this.hasChanged(newVNode, oldVNode)) {
             const nodeToReplace = parent.childNodes[index];
             if (nodeToReplace) {
                 parent.replaceChild(this.createFromVNode(newVNode), nodeToReplace);
@@ -342,12 +363,21 @@ class Dom {
             return;
         }
 
-        // Case 4: Same node type, update attributes and children
-        if (newVNode.tag) {
+        // Case 4: Same node type
+        if (newVNode && oldVNode && newVNode.tag) {
             const element = parent.childNodes[index];
-            if (element) {
+            if (element instanceof HTMLElement) {
                 this.updateAttributes(element, newVNode.attrs || {}, oldVNode.attrs || {});
-                this.patchChildren(element, newVNode.children || [], oldVNode.children || []);
+
+                // Filter to only valid children (VNodes, strings, numbers)
+                const newChildren = (newVNode.children || []).filter(c =>
+                    typeof c === 'object' || typeof c === 'string' || typeof c === 'number'
+                );
+                const oldChildren = (oldVNode.children || []).filter(c =>
+                    typeof c === 'object' || typeof c === 'string' || typeof c === 'number'
+                );
+
+                this.patchChildren(element, newChildren, oldChildren);
             }
         }
     }
@@ -356,8 +386,8 @@ class Dom {
      * Determines if two VNodes are different and require DOM updates.
      * Compares types, tags, and keys for efficient change detection.
      * 
-     * @param {Object|string|number} node1 - First VNode to compare
-     * @param {Object|string|number} node2 - Second VNode to compare
+     * @param {VNode|string|number|null} node1 - First VNode to compare
+     * @param {VNode|string|number|null} node2 - Second VNode to compare
      * @returns {boolean} True if nodes are significantly different
      * 
      * @example
@@ -372,12 +402,21 @@ class Dom {
             return node1 !== node2;
         }
 
-        // Different tags
-        if (node1.tag !== node2.tag) return true;
+        // Null checks (important!)
+        if (node1 == null || node2 == null) return true;
 
-        // Different keys (if both have keys)
-        if (node1.attrs?.key !== undefined && node2.attrs?.key !== undefined) {
-            return node1.attrs.key !== node2.attrs.key;
+        // At this point, node1 and node2 are assumed to be VNodes
+        /** @type {VNode} */
+        const vnode1 = /** @type {VNode} */ (node1);
+        /** @type {VNode} */
+        const vnode2 = /** @type {VNode} */ (node2);
+
+        // Different tags
+        if (vnode1.tag !== vnode2.tag) return true;
+
+        // Different keys
+        if (vnode1.attrs?.key !== undefined && vnode2.attrs?.key !== undefined) {
+            return vnode1.attrs.key !== vnode2.attrs.key;
         }
 
         return false;
@@ -387,9 +426,9 @@ class Dom {
      * Updates DOM element attributes by comparing old and new attribute sets.
      * Only modifies attributes that actually changed.
      * 
-     * @param {Node} element - The target DOM element
-     * @param {Object} newAttrs - New attributes to apply
-     * @param {Object} oldAttrs - Previous attributes for comparison
+     * @param {HTMLElement} element - The target DOM element
+     * @param {Object<string, any>} newAttrs - New attributes to apply
+     * @param {Object<string, any>} oldAttrs - Previous attributes for comparison
      * 
      * @example
      * Dom.updateAttributes(el, { class: 'active' }, { class: '' });
@@ -400,11 +439,19 @@ class Dom {
             if (!(key in newAttrs)) {
                 if (key === 'className') {
                     element.className = '';
-                } else if (key === 'checked' || key === 'disabled' || key === 'selected') {
-                    element[key] = false;
-                } else if (key.startsWith('on')) {
-                    element[key.toLowerCase()] = null;
-                } else {
+                }
+                else if (key === 'checked' || key === 'disabled' || key === 'selected') {
+                    // Cast element as any to bypass type errors for dynamic property access
+                    /** @type {any} */
+                    const elAny = element;
+                    elAny[key] = false;
+                }
+                else if (key.startsWith('on')) {
+                    /** @type {any} */
+                    const elAny = element;
+                    elAny[key.toLowerCase()] = null;
+                }
+                else {
                     element.removeAttribute(key);
                 }
             }
@@ -422,9 +469,9 @@ class Dom {
      * Recursively updates child nodes by comparing old and new VNode children.
      * Handles additions, removals, and updates with minimal DOM operations.
      * 
-     * @param {Node} parent - The parent DOM element
-     * @param {Array} newChildren - Array of new child VNodes
-     * @param {Array} oldChildren - Array of previous child VNodes
+     * @param {HTMLElement} parent - The parent DOM element
+     * @param {Array<VNode|string|number>} newChildren - Array of new child VNodes
+     * @param {Array<VNode|string|number>} oldChildren - Array of previous child VNodes
      * @throws Will fallback to full re-render if errors occur
      * 
      * @example
@@ -436,7 +483,7 @@ class Dom {
             console.log('Old children:', oldChildren);
             console.log('New children:', newChildren);
 
-            // If completely different, just replace
+            // If completely different, just replace all children
             if (newChildren.length === 0 || oldChildren.length === 0) {
                 parent.innerHTML = '';
                 newChildren.forEach(child => {
@@ -445,12 +492,14 @@ class Dom {
                 return;
             }
 
-            // First remove excess old children
+            // Remove excess old children safely
             while (parent.childNodes.length > newChildren.length) {
-                parent.removeChild(parent.lastChild);
+                const lastChild = parent.lastChild;
+                if (lastChild) parent.removeChild(lastChild);
+                else break;
             }
 
-            // Then update/add children
+            // Update/add children
             for (let i = 0; i < newChildren.length; i++) {
                 const newChild = newChildren[i];
                 const oldChild = oldChildren[i];
@@ -462,31 +511,43 @@ class Dom {
                 } else if (!oldChild || this.hasChanged(newChild, oldChild)) {
                     // Node needs replacement
                     parent.replaceChild(this.createFromVNode(newChild), domNode);
-                } else if (newChild.tag) {
-                    // Update existing node
-                    this.updateAttributes(domNode, newChild.attrs || {}, oldChild.attrs || {});
-                    this.patchChildren(domNode, newChild.children || [], oldChild.children || []);
+                } else if (typeof newChild === 'object' && newChild !== null && 'tag' in newChild) {
+                    // Only proceed if newChild is a VNode (has 'tag' property)
+                    if (domNode instanceof HTMLElement) {
+                        const vNewChild = /** @type {VNode} */ (newChild);
+                        const vOldChild = /** @type {VNode} */ (oldChild);
+
+                        this.updateAttributes(domNode, vNewChild.attrs || {}, vOldChild.attrs || {});
+
+                        // Filter out non-VNode children
+                        const newVNodeChildren = (vNewChild.children || []).filter(c =>
+                            typeof c === 'object' && c !== null && 'tag' in c
+                        );
+                        const oldVNodeChildren = (vOldChild.children || []).filter(c =>
+                            typeof c === 'object' && c !== null && 'tag' in c
+                        );
+
+                        this.patchChildren(domNode, newVNodeChildren, oldVNodeChildren);
+                    }
                 }
             }
             console.groupEnd();
         } catch (error) {
             console.error('Diffing error:', error);
-            // Fallback to full re-render
             parent.innerHTML = '';
             newChildren.forEach(child => {
                 parent.appendChild(this.createFromVNode(child));
             });
         }
-
     }
 
     /**
      * Efficiently renders a VNode tree with smart diffing against previous version.
      * Automatically handles initial render and subsequent updates.
      * 
-     * @param {Node} container - The target DOM container
-     * @param {Object} newVTree - The complete new VNode tree
-     * @param {Object|null} [oldVTree=null] - Previous VNode tree for diffing
+     * @param {HTMLElement} container - The target DOM container
+     * @param {VNode} newVTree - The complete new VNode tree
+     * @param {VNode|null} [oldVTree=null] - Previous VNode tree for diffing
      * 
      * @example
      * // Initial render
@@ -499,7 +560,9 @@ class Dom {
     static renderWithDiff(container, newVTree, oldVTree = null) {
         if (!oldVTree) {
             // Initial render
-            container.innerHTML = '';
+            if (container instanceof HTMLElement) {
+                container.innerHTML = '';
+            }
             if (newVTree) {
                 container.appendChild(this.createFromVNode(newVTree));
             }
@@ -509,5 +572,3 @@ class Dom {
         }
     }
 }
-
-export default Dom;

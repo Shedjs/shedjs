@@ -1,4 +1,4 @@
-class Route {
+export class Route {
     constructor() {
         /**
          * Registry of route paths and their associated action handlers.
@@ -40,10 +40,10 @@ class Route {
 
         this._renderRoute(path);
         // Listen for changes in the hash (back/forward navigation)
-        // window.addEventListener("hashchange", () => {
-        window.onhashchange = () => { // ⚠️ Inline assignment
+        window.addEventListener("hashchange", () => {
+            // window.onhashchange = () => { // Inline assignment
             this._renderRoute(window.location.hash.slice(1));
-        };
+        });
     }
 
     /**
@@ -61,5 +61,3 @@ class Route {
         }
     }
 }
-
-export default Route

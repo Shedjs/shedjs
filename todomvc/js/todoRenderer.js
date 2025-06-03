@@ -1,6 +1,6 @@
-import Dom from "/shedjs/dom.js";
+import { Dom } from "/shedjs/dom.js";
 
-class TodoRenderer {
+export class TodoRenderer {
     constructor(container, appState) {
         this.container = container;
         this.appState = appState;
@@ -157,5 +157,3 @@ class TodoRenderer {
         console.groupEnd();
     }
 }
-
-export default TodoRenderer;

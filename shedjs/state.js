@@ -1,4 +1,4 @@
-class State {
+export class State {
   /**
    * Initialize the State with optional initial state.
    * @param {Object} [initialState={}] - Initial state object (will be merged with persisted state)
@@ -21,7 +21,7 @@ class State {
   }
 
   /**
-   * @Private Hydrates state from localStorage.
+   * Hydrates state from localStorage.
    * Merges any saved state with initial state.
    */
   _hydrate() {
@@ -84,5 +84,3 @@ class State {
     return () => this._listeners.delete(listener);
   }
 }
-
-export default State
