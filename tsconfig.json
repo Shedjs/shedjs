@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "allowJs": true, // Process JS files
+        "checkJs": true, // Validate JS types via JSDoc
+        "declaration": true, // Generate .d.ts files
+        "emitDeclarationOnly": true, // Only emit types (no JS)
+        "declarationDir": "dist/types", // Output folder for types
+        "rootDir": "src", // Avoid overwrite errors
+        "moduleResolution": "node",
+        "strict": true, // Enable strict type checking
+        "esModuleInterop": true,
+        "skipLibCheck": true
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
+}

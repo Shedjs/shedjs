@@ -1,0 +1,72 @@
+{
+    "name": "shed.js",
+    "version": "1.0.1",
+    "description": "A lightweight, dependency-free JavaScript framework",
+    "main": "dist/shedjs.js",
+    "module": "dist/shedjs.esm.js",
+    "types": "dist/types/index.d.ts",
+    "type": "module",
+    "files": [
+        "dist",
+        "assets"
+    ],
+    "scripts": {
+        "build": "rollup -c",
+        "types": "tsc --emitDeclarationOnly --declaration --outDir dist/types",
+        "docs": "typedoc src --out docs",
+        "docs:json": "typedoc src --json docs/jsdoc.json",
+        "prepublishOnly": "npm run build && npm run types",
+        "build:full": "npm run build && npm run types && npm run docs"
+    },
+    "keywords": [
+        "framework",
+        "lightweight",
+        "frontend",
+        "virtual-dom",
+        "spa",
+        "javascript",
+        "typescript"
+    ],
+    "author": {
+        "name": "Shed.js Team"
+    },
+    "contributors": [
+        {
+            "name": "Sadiqui Abdelilah",
+            "email": "sadiquiabdelilah@gmail.com",
+            "url": "https://github.com/sadiqui"
+        },
+        {
+            "name": "Hrouk Youssef",
+            "email": "yhrouk@gmail.com",
+            "url": "https://github.com/youssefhrouk"
+        },
+        {
+            "name": "Elidriss Abdelfattah",
+            "email": "smias1.1998@gmail.com",
+            "url": "https://github.com/aelidris"
+        },
+        {
+            "name": "Dieye Ndiasse",
+            "email": "dieye.ndiasse17@gmail.com",
+            "url": "https://github.com/majnun917"
+        }
+    ],
+    "license": "MIT",
+    "devDependencies": {
+        "@rollup/plugin-commonjs": "^28.0.3",
+        "@rollup/plugin-node-resolve": "^16.0.1",
+        "@rollup/plugin-typescript": "^12.1.2",
+        "@types/babel__core": "^7.20.5",
+        "@types/babel__generator": "^7.27.0",
+        "@types/babel__template": "^7.4.4",
+        "@types/babel__traverse": "^7.20.7",
+        "@types/node": "^22.15.29",
+        "jsdoc": "^4.0.4",
+        "rollup": "^4.41.1",
+        "tslib": "^2.8.1",
+        "typedoc": "^0.28.5",
+        "typedoc-plugin-markdown": "^3.17.0",
+        "typescript": "^5.8.3"
+    }
+}

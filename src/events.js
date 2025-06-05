@@ -4,7 +4,6 @@
  * @param {Element | Window} el
  * @returns {void}
  */
-
 /**
  * @typedef {Object} EventHandler
  * @property {number} id
