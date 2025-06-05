@@ -145,15 +145,11 @@ export class TodoRenderer {
 
     // Main render method using efficient diffing
     render() {
-        console.group('Rendering');
-        console.log('Current state:', this.appState.getState());
+        console.group('[TodoRenderer] Rendering');
         const newVTree = this.createTodoListVNode();
-        console.log('New VTree:', newVTree);
-        console.log('Previous VTree:', this.prevVTree);
-
+        console.log('New VTree:', JSON.stringify(newVTree, null, 2));
         Dom.renderWithDiff(this.container, newVTree, this.prevVTree);
         this.prevVTree = newVTree;
-
         console.groupEnd();
     }
 }

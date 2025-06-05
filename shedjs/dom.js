@@ -3,6 +3,7 @@
  * @property {string} tag - HTML tag name
  * @property {Object.<string, string>} [attrs] - HTML attributes
  * @property {Array<VNode|string|number>} [children] - Child nodes (can be VNodes, strings, or numbers)
+ * @property {string|number|null} [key] - Optional key for reconciliation, check patchChildren()
  */
 
 export class Dom {
@@ -172,6 +173,19 @@ export class Dom {
     static createFromVNode(vnode) {
         if (typeof vnode === 'string' || typeof vnode === 'number') {
             return Dom.createTextNode(String(vnode));
+        }
+
+        // Text node handling
+        if (vnode.tag === 'TEXT_NODE') {
+            // Handle case where children is undefined or empty
+            const textContent = Array.isArray(vnode.children) && vnode.children.length > 0
+                ? vnode.children[0]
+                : '';
+            // Ensure we only pass string|number by converting any VNode to empty string
+            const safeText = typeof textContent === 'string' || typeof textContent === 'number'
+                ? textContent
+                : '';
+            return this.createTextNode(safeText);
         }
 
         if (typeof vnode !== 'object' || vnode === null || !('tag' in vnode)) {
@@ -399,7 +413,19 @@ export class Dom {
 
         // Primitive values
         if (typeof node1 === 'string' || typeof node1 === 'number') {
-            return node1 !== node2;
+            return String(node1) !== String(node2);
+        }
+
+        // Handle TEXT_NODE cases
+        if ((node1 && typeof node1 === 'object' && node1.tag === 'TEXT_NODE') ||
+            (node2 && typeof node2 === 'object' && node2.tag === 'TEXT_NODE')) {
+            const text1 = (node1 && typeof node1 === 'object' && node1.tag === 'TEXT_NODE')
+                ? node1.children?.[0] ?? ''
+                : '';
+            const text2 = (node2 && typeof node2 === 'object' && node2.tag === 'TEXT_NODE')
+                ? node2.children?.[0] ?? ''
+                : '';
+            return String(text1) !== String(text2);
         }
 
         // Null checks (important!)
@@ -483,60 +509,96 @@ export class Dom {
             console.log('Old children:', oldChildren);
             console.log('New children:', newChildren);
 
-            // If completely different, just replace all children
-            if (newChildren.length === 0 || oldChildren.length === 0) {
+            /**
+             * Normalize children to handle text nodes consistently
+             * @param {VNode|string|number|null|undefined} child
+             * @returns {VNode} - Never returns null (converts null to empty text node)
+             */
+            const normalizeChild = (child) => {
+                if (child == null) {
+                    return {
+                        tag: 'TEXT_NODE',
+                        children: [''],
+                        key: null
+                    };
+                }
+                if (typeof child === 'string' || typeof child === 'number') {
+                    return {
+                        tag: 'TEXT_NODE',
+                        children: [String(child)],
+                        key: null
+                    };
+                }
+                return child;
+            };
+
+            const normalizedNew = newChildren.map(normalizeChild).filter(Boolean);
+            const normalizedOld = oldChildren.map(normalizeChild).filter(Boolean);
+
+            // Fast path for empty cases
+            if (normalizedNew.length === 0) {
                 parent.innerHTML = '';
-                newChildren.forEach(child => {
-                    parent.appendChild(this.createFromVNode(child));
-                });
+                console.groupEnd();
                 return;
             }
 
-            // Remove excess old children safely
-            while (parent.childNodes.length > newChildren.length) {
+            // Remove excess old children
+            while (parent.childNodes.length > normalizedNew.length) {
                 const lastChild = parent.lastChild;
                 if (lastChild) parent.removeChild(lastChild);
-                else break;
             }
 
-            // Update/add children
-            for (let i = 0; i < newChildren.length; i++) {
-                const newChild = newChildren[i];
-                const oldChild = oldChildren[i];
+            // Diff each child
+            for (let i = 0; i < normalizedNew.length; i++) {
+                const newChild = normalizedNew[i];
+                const oldChild = normalizedOld[i];
                 const domNode = parent.childNodes[i];
 
+                // Case 1: New node needs to be added
                 if (!domNode) {
-                    // New node needs to be added
                     parent.appendChild(this.createFromVNode(newChild));
-                } else if (!oldChild || this.hasChanged(newChild, oldChild)) {
-                    // Node needs replacement
-                    parent.replaceChild(this.createFromVNode(newChild), domNode);
-                } else if (typeof newChild === 'object' && newChild !== null && 'tag' in newChild) {
-                    // Only proceed if newChild is a VNode (has 'tag' property)
-                    if (domNode instanceof HTMLElement) {
-                        const vNewChild = /** @type {VNode} */ (newChild);
-                        const vOldChild = /** @type {VNode} */ (oldChild);
+                    continue;
+                }
 
-                        this.updateAttributes(domNode, vNewChild.attrs || {}, vOldChild.attrs || {});
+                // Case 2: Nodes are different (including text changes)
+                if (!oldChild || this.hasChanged(newChild, oldChild)) {
+                    parent.replaceChild(
+                        this.createFromVNode(newChild),
+                        domNode
+                    );
+                    continue;
+                }
 
-                        // Filter out non-VNode children
-                        const newVNodeChildren = (vNewChild.children || []).filter(c =>
-                            typeof c === 'object' && c !== null && 'tag' in c
-                        );
-                        const oldVNodeChildren = (vOldChild.children || []).filter(c =>
-                            typeof c === 'object' && c !== null && 'tag' in c
-                        );
+                // Case 3: Same node type - update attributes and children
+                if (newChild.tag === 'TEXT_NODE') {
+                    // Text nodes are already handled by hasChanged
+                    continue;
+                }
 
-                        this.patchChildren(domNode, newVNodeChildren, oldVNodeChildren);
-                    }
+                // Handle element nodes with children
+                if (domNode instanceof HTMLElement) {
+                    this.updateAttributes(
+                        domNode,
+                        newChild.attrs || {},
+                        oldChild.attrs || {}
+                    );
+
+                    // Recursively diff children (including text nodes)
+                    const newChildNodes = (newChild.children || []).map(normalizeChild).filter(Boolean);
+                    const oldChildNodes = (oldChild.children || []).map(normalizeChild).filter(Boolean);
+                    this.patchChildren(domNode, newChildNodes, oldChildNodes);
                 }
             }
+
             console.groupEnd();
         } catch (error) {
             console.error('Diffing error:', error);
+            // Fallback to full re-render
             parent.innerHTML = '';
             newChildren.forEach(child => {
-                parent.appendChild(this.createFromVNode(child));
+                if (child != null) {
+                    parent.appendChild(this.createFromVNode(child));
+                }
             });
         }
     }
