@@ -2,6 +2,7 @@
 
 - rebuild: `npm run build`
 - patch: `npm version patch`
+- test: `npm pack --dry-run`
 - publish: `npm publish`
 
 ### Generates

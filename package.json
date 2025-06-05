@@ -1,14 +1,13 @@
 {
     "name": "shedjs",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "A lightweight, dependency-free JavaScript framework",
     "main": "dist/shedjs.js",
     "module": "dist/shedjs.esm.js",
     "types": "dist/types/index.d.ts",
     "type": "module",
     "files": [
-        "dist",
-        "assets"
+        "dist"
     ],
     "scripts": {
         "build": "rollup -c",
