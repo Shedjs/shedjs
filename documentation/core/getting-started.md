@@ -1,4 +1,4 @@
-<h1 align="center">Shed.js: Getting Started</h1>
+<h1 align="center">Shedjs: Getting Started</h1>
 
 <p align="center">
   <strong>Your Lightweight, Customizable JavaScript Framework</strong><br>

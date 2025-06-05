@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="./assets/logo.png" alt="Shed.js_logo" width="300"/>
+  <img src="./assets/logo.png" alt="Shedjs_logo" width="300"/>
 </p>
 
 <p align="center">
   <b>Shed the bloat. Keep the power.</b>
 </p>
 
-**Shed.js** delivers just enough structure without the bloat of larger frameworks. This lightweight **JavaScript framework** abstracts DOM manipulation, routing, state management, and event handling into a clean, modular system, with **first-class TypeScript support** for robust type safety.  
+**Shedjs** (or Shed.js) delivers just enough structure without the bloat of larger frameworks. This lightweight **JavaScript framework** abstracts DOM manipulation, routing, state management, and event handling into a clean, modular system, with **first-class TypeScript support** for robust type safety.  
 
 - **Zero dependencies:** Pure JS/TS with no hidden bloat  
 - **Focused API:** Minimal surface area for maximum control  

@@ -1,4 +1,4 @@
-<h1 align="center">Shed.js: Features & strengths</h1>
+<h1 align="center">Shedjs: Features & strengths</h1>
 
 ## 1. DOM Manipulation
 
@@ -174,14 +174,14 @@
  
 | Framework | DOM Abstraction       | Reactivity          | Templating        | Key Differentiator                          |
 |-----------|-----------------------|---------------------|-------------------|---------------------------------------------|
-| **Shed.js** | Lightweight DOM utils | Manual (`State` class) | Imperative JS     | Minimalist, no magic, direct DOM control     |
+| **Shedjs** | Lightweight DOM utils | Manual (`State` class) | Imperative JS     | Minimalist, no magic, direct DOM control     |
 | Svelte    | Compiled JS           | Auto-tracked (`$:`)   | HTML + `{#if}`    | Zero-runtime overhead                      |
 | Next.js   | React VDOM            | Hooks (`useState`)    | JSX               | SSR/SSG + React ecosystem                  |
 | Vue       | Optimized VDOM        | Proxy-based (`ref`)   | HTML + `v-for`    | Progressive adoption                       |
 | Mithril   | Minimal VDOM          | Manual redraw         | Hyperscript/JSX   | Tiny (<10KB) + fast keyed updates          |
 
 ### **Key Takeaways**  
-1. **Shed.js**  
+1. **Shedjs**  
    - **For**: Developers who want **bare-metal DOM control** without VDOM overhead.  
 
 2. **Svelte**  
@@ -196,7 +196,7 @@
 5. **Mithril**  
    - **For**: Ultra-lightweight **VDOM without React’s complexity**.  
 
-### **Where Shed.js Fits**  
+### **Where Shedjs Fits**  
 - **Closest to**: Mithril’s hyperscript (explicit updates) or vanilla JS, but with structured utilities.  
 - **Unique Value**:  
   - `State` class + `Dom` utils provide **just enough structure** without forcing a paradigm.  

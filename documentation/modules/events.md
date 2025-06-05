@@ -1,6 +1,6 @@
 <h1 align="center">Event Handling</h1>
 
-Event handling with Shed.js elements is similar to event handling with DOM elements, such as `addEventListener()`.  
+Event handling with Shedjs elements is similar to event handling with DOM elements, such as `addEventListener()`.  
 There are a few differences in syntax, Shed offers an APi:  
 
 * Check if events are supported
