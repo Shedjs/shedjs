@@ -1,6 +1,6 @@
 {
     "name": "shedjs",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "A lightweight, dependency-free JavaScript framework",
     "repository": {
         "type": "git",
