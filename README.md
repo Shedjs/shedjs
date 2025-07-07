@@ -23,11 +23,11 @@ The framework introduces a powerful architecture composed of a **[Virtual DOM La
 
 ## Initialization
 
-For detailed guidance on how to get started with the framework, please refer to our [setup documentation](https://github.com/Shedjs/shedjs/blob/main/documentation/core/getting-started.md).
+For detailed guidance on how to get started with the framework, please refer to our [setup documentation](https://github.com/Shedjs/shedjs-docs/blob/main/.get-started.md).
 
 ## Code Examples
 
-For in-depth examples and usage of the framework’s APIs and methods, please see our [modules documentation](https://github.com/Shedjs/shedjs/blob/main/documentation/modules).
+For in-depth examples and usage of the framework’s APIs and methods, please see our four [modules documentation](https://github.com/Shedjs/shedjs-docs).
 
 ## Contribution
 
