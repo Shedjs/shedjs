@@ -1,15 +1,15 @@
-### Actions
-
-- rebuild: `npm run build`
-- patch: `npm version patch`
-- test: `npm pack --dry-run`
-- publish: `npm publish`
-
 ### Generates
 
 - install tools: `npm install && npm i --save-dev typedoc`
 - generate ./types/ `npx tsc --emitDeclarationOnly --outDir dist/types`
 - generate ./docs/ `npx typedoc src --out docs`
+
+### Actions
+
+- rebuild: `npm run build`
+- versionning: https://gist.github.com/sadiqui/2f12484b729348dc087a146f54da8c3f
+- test: `npm pack --dry-run`
+- publish: `npm publish`
 
 ### Editor Settings
 
