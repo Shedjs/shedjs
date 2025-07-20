@@ -206,6 +206,7 @@ export class Event {
             const winListener = (e /** @type {globalThis.Event} */) => callback(e, window);
             handler.windowListener = winListener;
             window.addEventListener(event, winListener);
+            // window[`on${event}`] = winListener; // Inline assignment
             return;
         }
 
@@ -242,6 +243,7 @@ export class Event {
                     handler.domListeners.set(el, domListener);
 
                     // Cast to EventListener to avoid overload errors
+                    // el[`on${event}`] = domListener; // Inline assignment
                     el.addEventListener(event, /** @type {EventListener} */(domListener));
                 }
             });
@@ -292,7 +294,7 @@ export class Event {
             });
         } else {
             window.addEventListener('DOMContentLoaded', () => {
-                // window.onload = () => { // Inline fallback (less ideal)
+                // window.onload = () => { // Inline fallback
                 if (this._observer && document.body) {
                     this._observer.observe(document.body, {
                         childList: true,

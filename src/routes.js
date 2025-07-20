@@ -40,8 +40,8 @@ export class Route {
 
         this._renderRoute(path);
         // Listen for changes in the hash (back/forward navigation)
+        // window.onhashchange = () => { // Inline assignment
         window.addEventListener("hashchange", () => {
-            // window.onhashchange = () => { // Inline assignment
             this._renderRoute(window.location.hash.slice(1));
         });
     }
