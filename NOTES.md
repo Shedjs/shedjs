@@ -7,7 +7,7 @@
 ### Actions
 
 - rebuild: `npm run build`
-- versionning: https://gist.github.com/sadiqui/2f12484b729348dc087a146f54da8c3f
+- SemVer: https://gist.github.com/sadiqui/2f12484b729348dc087a146f54da8c3f #_If_buit_code_changed
 - test: `npm pack --dry-run`
 - publish: `npm publish`
 
